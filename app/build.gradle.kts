@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services") version "4.4.0" apply false}
+    alias(libs.plugins.google.services)
+}
 
 android {
     namespace = "com.example.styloandroid"
@@ -52,4 +53,16 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // --- ViewModel e LiveData ---
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
+// --- Navegação entre fragments ---
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.3")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.3")
+// --- Coroutines (necessário pro viewModelScope) ---
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+// *** Necessário pro 'by viewModels()' ***
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
 }
