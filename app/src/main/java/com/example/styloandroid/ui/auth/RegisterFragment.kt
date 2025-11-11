@@ -7,8 +7,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.styloandroid.R
+import com.example.styloandroid.data.auth.AuthResult
 import com.example.styloandroid.databinding.FragmentRegisterBinding
-import com.seuprojeto.stylo.data.auth.AuthResult
 
 class RegisterFragment : Fragment(R.layout.fragment_register) {
     private var _b: FragmentRegisterBinding? = null

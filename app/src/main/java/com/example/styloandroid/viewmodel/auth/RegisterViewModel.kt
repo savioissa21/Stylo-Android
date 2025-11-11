@@ -3,7 +3,7 @@ package com.example.styloandroid.ui.auth
 import android.util.Patterns
 import androidx.lifecycle.*
 import com.example.styloandroid.data.auth.AuthRepository
-import com.seuprojeto.stylo.data.auth.AuthResult
+import com.example.styloandroid.data.auth.AuthResult
 import kotlinx.coroutines.launch
 
 

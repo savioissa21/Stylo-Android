@@ -9,7 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentLoginBinding
 import com.example.styloandroid.viewmodel.auth.LoginViewModel
-import com.seuprojeto.stylo.data.auth.AuthResult
+import com.example.styloandroid.data.auth.AuthResult as AuthState
 
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
@@ -41,14 +41,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
 
         // Observar estado do ViewModel
-        vm.state.observe(viewLifecycleOwner) { res ->
+        vm.state.observe(viewLifecycleOwner) { res: AuthState ->
             when (res) {
-                is AuthResult.Loading -> b.btnLogin.isEnabled = false
-                is AuthResult.Success -> {
+                is AuthState.Loading -> b.btnLogin.isEnabled = false
+                is AuthState.Success -> {
                     b.btnLogin.isEnabled = true
                     findNavController().navigate(R.id.action_login_to_home)
                 }
-                is AuthResult.Error -> {
+                is AuthState.Error -> {
                     b.btnLogin.isEnabled = true
                     Toast.makeText(requireContext(), res.message, Toast.LENGTH_SHORT).show()
                 }

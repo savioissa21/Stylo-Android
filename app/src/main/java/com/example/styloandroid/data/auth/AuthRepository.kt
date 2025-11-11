@@ -9,12 +9,6 @@ import kotlinx.coroutines.withContext
 
 
 
-sealed class AuthResult {
-    data object Loading : AuthResult()
-    data class Success(val uid: String) : AuthResult()
-    data class Error(val message: String) : AuthResult()
-}
-
 class AuthRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()

@@ -1,4 +1,4 @@
-package com.seuprojeto.stylo.data.auth
+package com.example.styloandroid.data.auth
 
 /**
  * Representa o estado de uma operação de autenticação (login ou registro)

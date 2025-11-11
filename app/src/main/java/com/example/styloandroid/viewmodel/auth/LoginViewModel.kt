@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.styloandroid.data.auth.AuthRepository
-import com.seuprojeto.stylo.data.auth.AuthResult
+import com.example.styloandroid.data.auth.AuthResult
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
