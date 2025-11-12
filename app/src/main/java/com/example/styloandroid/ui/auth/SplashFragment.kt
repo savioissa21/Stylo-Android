@@ -1,4 +1,4 @@
-package com.example.styloandroid.ui.auth // Ou o pacote que você preferir
+package com.example.styloandroid.ui.splash
 
 import android.os.Bundle
 import android.os.Handler
@@ -9,6 +9,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.styloandroid.R
 import com.example.styloandroid.data.auth.AuthRepository
 
+/**
+ * Novo Fragment (Passo 1)
+ * Roteia o usuário para Login (se deslogado) ou Home (se logado).
+ */
 class SplashFragment : Fragment(R.layout.fragment_splash) {
 
     private val repo = AuthRepository()
@@ -16,16 +20,13 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Adiciona um pequeno delay para a splash não ser instantânea
         Handler(Looper.getMainLooper()).postDelayed({
             checkAuthStatus()
-        }, 1000) // 1 segundo de delay
+        }, 1200) // Delay de 1.2s
     }
 
     private fun checkAuthStatus() {
-        // Garante que o fragment ainda está "vivo" antes de navegar
         if (!isAdded) return
-
         val navController = findNavController()
 
         if (repo.currentUserId() != null) {
