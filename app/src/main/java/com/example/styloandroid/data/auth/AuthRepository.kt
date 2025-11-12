@@ -18,8 +18,8 @@ class AuthRepository(
         withContext(Dispatchers.IO) {
             try {
                 val res = auth.signInWithEmailAndPassword(email, pass).await()
-                val user = res.user ?: return@withContext AuthResult.Error("Usuário não encontrado")
-                AuthResult.Success(user.uid)
+                val uid = res.user?.uid ?: return@withContext AuthResult.Error("Usuário não encontrado")
+                AuthResult.Success(uid)
             } catch (e: Exception) {
                 AuthResult.Error(e.message ?: "Falha no login")
             }
@@ -33,9 +33,7 @@ class AuthRepository(
                 val user = res.user ?: return@withContext AuthResult.Error("Usuário nulo")
 
                 // Atualiza nome no perfil Firebase
-                val profile = userProfileChangeRequest {
-                    displayName = name
-                }
+                val profile = userProfileChangeRequest { displayName = name }
                 user.updateProfile(profile).await()
 
                 // Cria documento no Firestore

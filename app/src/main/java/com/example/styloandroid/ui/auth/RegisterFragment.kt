@@ -1,6 +1,7 @@
 package com.example.styloandroid.ui.auth
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -20,12 +21,14 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         _b = FragmentRegisterBinding.bind(view)
 
         b.btnRegister.setOnClickListener {
-            vm.register(
-                b.etName.text.toString(),
-                b.etEmail.text.toString(),
-                b.etPassword.text.toString(),
-                b.etConfirm.text.toString()
-            )
+            val name = b.etName.text?.toString().orEmpty()
+            val email = b.etEmail.text?.toString().orEmpty()
+            val pass = b.etPassword.text?.toString().orEmpty()
+            val confirm = b.etConfirm.text?.toString().orEmpty()
+
+            Log.d("REG_DEBUG", "name='$name' email='$email' pass='${if(pass.isEmpty()) "<empty>" else "<present>"}' confirm='${if(confirm.isEmpty()) "<empty>" else "<present>"}'")
+
+            vm.register(name, email, pass, confirm)
         }
 
         vm.state.observe(viewLifecycleOwner) { res ->
