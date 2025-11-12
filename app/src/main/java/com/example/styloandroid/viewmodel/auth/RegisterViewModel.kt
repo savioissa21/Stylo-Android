@@ -84,10 +84,16 @@ class RegisterViewModel(
         viewModelScope.launch {
             _state.value = AuthResult.Loading
             try {
-                // Passa o objeto de dados para o repositório
-                repo.register(data)
-                val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                _state.value = AuthResult.Success(uid)
+                // 1. CAPTURA O RESULTADO COMPLETO (SUCCESS OU ERROR) DO REPOSITÓRIO
+                val result = repo.register(data)
+
+                // 2. ATRIBUI O RESULTADO DIRETO, que já contém o UID e o ROLE.
+                _state.value = result
+
+                // As linhas que causavam o erro (uid e data) foram removidas:
+                // val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                // _state.value = AuthResult.Success(uid)
+
             } catch (e: Exception) {
                 _state.value = AuthResult.Error(e.message ?: "Falha no registro")
             }
