@@ -33,4 +33,24 @@
         android:label="Home"
         tools:layout="@layout/fragment_home" />
 
+    <fragment
+        android:id="@+id/servicesFragment"
+        android:name="com.example.styloandroid.ui.services.ServicesFragment"
+        tools:layout="@layout/fragment_services" />
+
+    <fragment
+        android:id="@+id/appointmentsFragment"
+        android:name="com.example.styloandroid.ui.appointments.AppointmentsFragment"
+        tools:layout="@layout/fragment_appointments" />
+
+    <fragment
+        android:id="@+id/professionalsFragment"
+        android:name="com.example.styloandroid.ui.professionals.ProfessionalsFragment"
+        tools:layout="@layout/fragment_professionals" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.styloandroid.ui.profile.ProfileFragment"
+        tools:layout="@layout/fragment_profile" />
+
 </navigation>
