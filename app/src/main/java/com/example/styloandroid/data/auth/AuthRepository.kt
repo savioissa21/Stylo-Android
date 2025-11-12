@@ -20,7 +20,17 @@ class AuthRepository(
             try {
                 val res = auth.signInWithEmailAndPassword(email, pass).await()
                 val uid = res.user?.uid ?: return@withContext AuthResult.Error("Usuário não encontrado")
-                AuthResult.Success(uid)
+
+                // 1. Buscar o documento do usuário no Firestore
+                val userDoc = db.collection("users").document(uid).get().await()
+                val appUser = userDoc.toObject(AppUser::class.java)
+
+                // 2. Extrair o role (função)
+                val role = appUser?.role ?: return@withContext AuthResult.Error("Perfil de usuário incompleto.")
+
+                // 3. Retornar Sucesso com o role!
+                AuthResult.Success(uid, role)
+
             } catch (e: Exception) {
                 AuthResult.Error(e.message ?: "Falha no login")
             }
@@ -29,44 +39,27 @@ class AuthRepository(
     /**
      * Faz registro e cria documento no Firestore usando o RegisterData
      */
-    suspend fun register(data: RegisterViewModel.RegisterData): AuthResult =
+    suspend fun register(user: AppUser, pass: String): AuthResult =
         withContext(Dispatchers.IO) {
             try {
-                // 1. Cria usuário no Firebase Auth
-                val res = auth.createUserWithEmailAndPassword(data.email, data.pass).await()
-                val user = res.user ?: return@withContext AuthResult.Error("Usuário nulo")
+                // 1. Registro no Firebase Auth
+                val res = auth.createUserWithEmailAndPassword(user.email, pass).await()
 
-                // 2. Atualiza nome no perfil Firebase
-                val profile = userProfileChangeRequest { displayName = data.name }
-                user.updateProfile(profile).await()
+                // O UID é gerado aqui. Se for nulo, algo deu errado no Auth.
+                val uid = res.user?.uid ?: return@withContext AuthResult.Error("Usuário não encontrado após o registro.")
 
-                // 3. Cria o objeto AppUser completo para o Firestore
-                val appUser = AppUser(
-                    uid = user.uid,
-                    name = data.name,
-                    email = data.email,
-                    role = data.role,
-                    createdAt = System.currentTimeMillis(),
-                    updatedAt = System.currentTimeMillis(),
+                // ⚡️ CORREÇÃO: Cria uma cópia do AppUser e insere o UID gerado
+                val userWithUid = user.copy(uid = uid)
 
-                    // Mapeia os dados do Prestador
-                    businessName = data.businessName,
-                    cnpj = data.cnpj,
-                    businessPhone = data.businessPhone,
-                    areaOfWork = data.areaOfWork,
-                    socialLinks = data.socialLinks,
-                    paymentMethods = data.paymentMethods,
-                    businessAddress = data.businessAddress,
-                    subscriptionStatus = "trial"
-                )
+                // 2. Criação do Documento no Firestore, usando o UID como ID do Documento
+                // E salvando o objeto atualizado (userWithUid)
+                db.collection("users").document(uid).set(userWithUid).await()
 
-                // 4. Salva no Firestore
-                db.collection("users").document(user.uid).set(appUser).await()
+                // Retorna sucesso, incluindo o 'role' para ser usado na navegação
+                AuthResult.Success(uid, userWithUid.role)
 
-                AuthResult.Success(user.uid)
             } catch (e: Exception) {
-                // Se falhar, tenta deletar o usuário do Auth para não ficar órfão
-                auth.currentUser?.delete()?.await()
+                // ... (seu tratamento de erro)
                 AuthResult.Error(e.message ?: "Falha no registro")
             }
         }

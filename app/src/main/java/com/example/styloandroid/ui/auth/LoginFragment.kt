@@ -46,7 +46,19 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 is AuthState.Loading -> b.btnLogin.isEnabled = false
                 is AuthState.Success -> {
                     b.btnLogin.isEnabled = true
-                    findNavController().navigate(R.id.action_login_to_home)
+                    when (res.role) {
+                        "profissional" -> {
+                            // Redireciona para a Home do Estabelecimento (Seu HomeFragment atual)
+                            findNavController().navigate(R.id.action_login_to_home)
+                        }
+                        "cliente" -> {
+                            // Redireciona para a Home do Cliente (Você precisará criar esse Fragment e destino)
+                            findNavController().navigate(R.id.action_login_to_client_home)
+                        }
+                        else -> {
+                            Toast.makeText(requireContext(), "Erro: Tipo de usuário inválido.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
                 is AuthState.Error -> {
                     b.btnLogin.isEnabled = true

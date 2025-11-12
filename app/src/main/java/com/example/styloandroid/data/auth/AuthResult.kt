@@ -14,7 +14,7 @@ sealed class AuthResult {
     /**
      * Estado de sucesso, contendo o ID do usuário autenticado (UID do Firebase, por exemplo).
      */
-    data class Success(val uid: String) : AuthResult()
+    data class Success(val uid: String, val role: String) : AuthResult()
 
     /**
      * Estado de erro, contendo a mensagem de falha (ex: credenciais inválidas, rede, etc.).
