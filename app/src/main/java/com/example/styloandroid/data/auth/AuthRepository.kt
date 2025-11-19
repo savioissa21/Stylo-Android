@@ -1,6 +1,7 @@
 package com.example.styloandroid.data.auth
 
 import android.R.attr.data
+import android.util.Log
 import com.example.styloandroid.ui.auth.RegisterViewModel // Importe o RegisterData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
@@ -36,6 +37,17 @@ class AuthRepository(
                 AuthResult.Error(e.message ?: "Falha no login")
             }
         }
+
+    suspend fun getAppUser(): AppUser? = withContext(Dispatchers.IO) {
+        val uid = auth.currentUser?.uid ?: return@withContext null
+        try {
+            val doc = db.collection("users").document(uid).get().await()
+            return@withContext doc.toObject(AppUser::class.java)
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Erro ao buscar AppUser: ${e.message}")
+            return@withContext null
+        }
+    }
 
     /**
      * Faz registro e cria documento no Firestore usando o RegisterData
@@ -79,6 +91,8 @@ class AuthRepository(
                 AuthResult.Error(e.message ?: "Falha no registro")
             }
         }
+
+
     fun currentUserId(): String? = auth.currentUser?.uid
 
     fun logout() = auth.signOut()

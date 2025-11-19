@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Stylo Android</string>
+    <string name="provider_rating">%1$.1f (%2$d)</string>
 </resources>
