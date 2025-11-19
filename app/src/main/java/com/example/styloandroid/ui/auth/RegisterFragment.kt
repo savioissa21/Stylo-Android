@@ -8,6 +8,7 @@ import androidx.core.view.isVisible // Importe isso
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navOptions
 import com.example.styloandroid.R
 import com.example.styloandroid.data.auth.AuthResult
 // Importe os novos modelos de dados
@@ -110,7 +111,31 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 is AuthResult.Success -> {
                     b.btnRegister.isEnabled = true
                     // Navega para a home (limpando a pilha de login/registro)
-                    findNavController().navigate(R.id.action_register_to_home)
+                    // ✨ CORREÇÃO AQUI: Verificar o role para navegar corretamente
+                    when (res.role) {
+                        "profissional" -> {
+                            // Redireciona para a Home do Prestador
+                            findNavController().navigate(R.id.action_register_to_home)
+                        }
+                        "cliente" -> {
+                            // Redireciona para a Home do Cliente (fragment_client_home)
+                            // A rota 'action_register_to_client_home' não está no seu nav_graph,
+                            // mas vamos usar a ação que navega para a Home Profissional temporariamente,
+                            // pois o LoginFragment usa o destino 'clientHomeFragment'.
+                            // O ideal é adicionar a action correta no nav_graph.
+
+                            // 💡 ALTERNATIVA TEMPORÁRIA: Navegar para o destino final (clientHomeFragment)
+                            // e limpar o back stack, como o LoginFragment faz.
+                            findNavController().navigate(R.id.clientHomeFragment, null,
+                                // Limpa o back stack para que o usuário não volte para o registro
+                                navOptions { popUpTo(R.id.nav_graph) { inclusive = true } }
+                            )
+
+                        }
+                        else -> {
+                            Toast.makeText(requireContext(), "Erro: Tipo de usuário inválido.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
                 is AuthResult.Error -> {
                     b.btnRegister.isEnabled = true
