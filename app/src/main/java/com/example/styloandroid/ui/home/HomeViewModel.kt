@@ -6,7 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.styloandroid.data.ProviderCardData
 import com.example.styloandroid.data.auth.AuthRepository
+import com.example.styloandroid.data.home.HomeRepository
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
@@ -17,9 +19,33 @@ class HomeViewModel(
     private val _userName = MutableLiveData<String>()
     val userName: LiveData<String> = _userName
 
+    private val _providers = MutableLiveData<List<ProviderCardData>>()
+    val providers: LiveData<List<ProviderCardData>> = _providers
+    private val homeRepo = HomeRepository()
+
     init {
-        // Inicia a busca do nome logo que o ViewModel é criado
         fetchUserName()
+        fetchProviders() // Busca os profissionais ao iniciar
+    }
+
+    fun fetchProviders() {
+        viewModelScope.launch {
+            val appUsers = homeRepo.getProfessionalProviders()
+
+            // Mapeia AppUser -> ProviderCardData
+            val cards = appUsers.map { user ->
+                ProviderCardData(
+                    id = user.uid, // Ou user.id se tiver mapeado
+                    businessName = user.businessName ?: user.name ?: "Sem Nome",
+                    areaOfWork = user.areaOfWork ?: "Serviços Gerais", // Use o campo 'category' do registro
+                    rating = 5.0, // Valor padrão por enquanto (futuro: buscar reviews)
+                    reviewCount = 0, // Valor padrão
+                    profileImageUrl = null // user.photoUrl (se tiver salvo)
+                )
+            }
+
+            _providers.value = cards
+        }
     }
 
     private fun fetchUserName() {

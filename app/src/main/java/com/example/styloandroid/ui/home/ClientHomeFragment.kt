@@ -42,7 +42,7 @@ private val mockProviders = listOf(
 class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
 
     private val homeViewModel: HomeViewModel by viewModels()
-
+    private lateinit var providerAdapter: ProviderAdapter
     private var _binding: FragmentClientHomeBinding? = null
     private val binding get() = _binding!!
 
@@ -52,8 +52,10 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
 
         // 🚨 ONDE TUDO É CHAMADO:
         setupUserInfoObserver()
-        setupRecyclerViewWithMocks()
+        setupRecyclerView()
         setupActionListeners()
+
+        binding.rvProviders.layoutManager = LinearLayoutManager(requireContext())
     }
 
     private fun setupUserInfoObserver() {
@@ -62,17 +64,24 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
         }
     }
 
-    private fun setupRecyclerViewWithMocks() {
-        // Log.d("TESTE", "Tamanho da lista: ${mockProviders.size}") // Já verificamos que é 3
-
-        val providerAdapter = ProviderAdapter(mockProviders) { provider ->
+    private fun setupRecyclerView() {
+        // 1. Crie o adapter UMA VEZ com uma lista vazia
+        providerAdapter = ProviderAdapter(emptyList()) { provider ->
             Toast.makeText(requireContext(), "Agendar com ${provider.businessName}", Toast.LENGTH_SHORT).show()
         }
 
+        // 2. Configure a RecyclerView
         binding.rvProviders.apply {
-            // Este manager garante a rolagem vertical, mesmo que já esteja no XML
             layoutManager = LinearLayoutManager(requireContext())
             adapter = providerAdapter
+        }
+
+        // 3. Observe e chame o método de atualização
+        homeViewModel.providers.observe(viewLifecycleOwner) { providersList ->
+            if (providersList.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Nenhum provedor encontrado", Toast.LENGTH_SHORT).show()
+            }
+            providerAdapter.updateList(providersList) // ✨ ATUALIZA A LISTA EXISTENTE
         }
     }
 

@@ -11,7 +11,7 @@ import com.example.styloandroid.databinding.ItemProviderCardBinding
  * Adapter para exibir os cards de Profissionais/Estabelecimentos na tela do cliente.
  */
 class ProviderAdapter(
-    private val providers: List<ProviderCardData>,
+    private var providers: List<ProviderCardData> = emptyList(),
     private val onScheduleClicked: (ProviderCardData) -> Unit // Callback de clique
 ) : RecyclerView.Adapter<ProviderAdapter.ProviderViewHolder>() {
 
@@ -47,6 +47,10 @@ class ProviderAdapter(
         }
     }
 
+    fun updateList(newList: List<ProviderCardData>) {
+        providers = newList
+        notifyDataSetChanged() // Notifica a RecyclerView que os dados mudaram
+    }
 
     // 2. Cria o ViewHolder e infla o layout do card
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProviderViewHolder {
