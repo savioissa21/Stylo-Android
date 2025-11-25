@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.styloandroid.R
 import com.example.styloandroid.data.auth.AuthRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class SplashFragment : Fragment(R.layout.fragment_splash) {
@@ -16,32 +17,40 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Removemos o Handler e usamos coroutines para buscar o usuário
+        // Usa lifecycleScope para rodar em background sem travar a tela
         lifecycleScope.launch {
+            // Um pequeno delay para a marca aparecer (opcional, mas fica bonito)
+            delay(1500)
             checkAuthStatus()
         }
     }
 
     private suspend fun checkAuthStatus() {
+        // Se o Fragment já morreu (usuário fechou o app), para aqui
+        if (!isAdded) return
+
         val navController = findNavController()
 
-        // 1. Verifica se tem usuário logado no Auth
+        // 1. Verifica se tem sessão aberta no Firebase Auth
         if (repo.currentUserId() != null) {
-            // 2. Busca os dados dele no Firestore para saber o ROLE
+
+            // 2. Busca os dados no Firestore para saber QUEM é (Cliente ou Profissional)
             val user = repo.getAppUser()
 
             if (user != null) {
                 if (user.role == "profissional") {
+                    // É Cabeleireiro/Barbeiro -> Painel de Gestão
                     navController.navigate(R.id.action_splash_to_home)
                 } else {
-                    // Se for cliente (ou qualquer outro), vai pra home do cliente
+                    // É Cliente -> Home de Busca
                     navController.navigate(R.id.action_splash_to_client_home)
                 }
             } else {
-                // Se deu erro ao buscar usuário, manda pro login
+                // Erro ao ler perfil (internet ruim ou user deletado) -> Vai pro Login
                 navController.navigate(R.id.action_splash_to_login)
             }
         } else {
+            // Ninguém logado -> Login
             navController.navigate(R.id.action_splash_to_login)
         }
     }

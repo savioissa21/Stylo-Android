@@ -10,19 +10,16 @@
         android:name="com.example.styloandroid.ui.splash.SplashFragment"
         android:label="Splash"
         tools:layout="@layout/fragment_splash">
-
         <action
             android:id="@+id/action_splash_to_client_home"
             app:destination="@id/clientHomeFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
-
         <action
             android:id="@+id/action_splash_to_login"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
-
         <action
             android:id="@+id/action_splash_to_home"
             app:destination="@id/homeFragment"
@@ -66,10 +63,13 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
-
         <action
             android:id="@+id/action_home_to_services"
             app:destination="@id/servicesFragment" />
+
+        <action
+            android:id="@+id/action_home_to_agenda"
+            app:destination="@id/providerAgendaFragment" />
     </fragment>
 
     <fragment
@@ -82,7 +82,6 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
-
         <action
             android:id="@+id/action_client_home_to_detail"
             app:destination="@id/establishmentDetailFragment" />
@@ -99,5 +98,21 @@
         android:name="com.example.styloandroid.ui.management.ServicesFragment"
         android:label="Meus Serviços"
         tools:layout="@layout/fragment_services" />
+
+    <fragment
+        android:id="@+id/providerAgendaFragment"
+        android:name="com.example.styloandroid.ui.management.ProviderAgendaFragment"
+        android:label="Minha Agenda"
+        tools:layout="@layout/fragment_provider_agenda" />
+
+    <fragment
+        android:id="@+id/clientAppointmentsFragment"
+        android:name="com.example.styloandroid.ui.booking.ClientAppointmentsFragment"
+        android:label="Meus Agendamentos"
+        tools:layout="@layout/fragment_client_appointments" />
+
+    <action
+        android:id="@+id/action_client_home_to_appointments"
+        app:destination="@id/clientAppointmentsFragment" />
 
 </navigation>

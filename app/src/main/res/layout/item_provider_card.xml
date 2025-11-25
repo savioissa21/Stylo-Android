@@ -1,104 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginTop="12dp"
-    app:cardBackgroundColor="#21262d"
-    app:cardCornerRadius="12dp"
-    app:strokeWidth="0dp">
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:paddingBottom="16dp">
 
         <ImageView
-            android:id="@+id/ivProviderLogo"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:id="@+id/ivProviderImage"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
             android:scaleType="centerCrop"
-            android:background="@drawable/teste"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/teste"
-            android:contentDescription="Logo do Estabelecimento" />
+            android:background="#E0E0E0"
+            android:src="@drawable/ic_launcher_background"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/ic_launcher_background"
+            android:alpha="0.3"
+            app:layout_constraintBottom_toBottomOf="@id/ivProviderImage"/>
 
         <TextView
             android:id="@+id/tvBusinessName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            tools:text="Barbearia do Mestre"
+            android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/btnFavorite"
-            app:layout_constraintStart_toEndOf="@+id/ivProviderLogo"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Barbearia do Tony" />
+            android:textColor="#333333"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintTop_toBottomOf="@id/ivProviderImage"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <TextView
-            android:id="@+id/tvAreaOfWork"
+            android:id="@+id/tvCategory"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="#CCCCCC"
+            tools:text="Cabelo &amp; Barba • Centro"
             android:textSize="14sp"
-            app:layout_constraintEnd_toStartOf="@+id/btnFavorite"
-            app:layout_constraintStart_toStartOf="@+id/tvBusinessName"
-            app:layout_constraintTop_toBottomOf="@+id/tvBusinessName"
-            tools:text="Barbearia e Corte Masculino" />
+            android:textColor="#757575"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/tvBusinessName"
+            app:layout_constraintStart_toStartOf="@id/tvBusinessName"
+            app:layout_constraintEnd_toEndOf="@id/tvBusinessName"/>
 
         <LinearLayout
-            android:id="@+id/ratingLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            app:layout_constraintStart_toStartOf="@+id/tvAreaOfWork"
-            app:layout_constraintTop_toBottomOf="@+id/tvAreaOfWork">
+            android:layout_marginTop="12dp"
+            android:background="@drawable/ic_launcher_background"
+            android:backgroundTint="#FFF8E1"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            app:layout_constraintTop_toBottomOf="@id/tvCategory"
+            app:layout_constraintStart_toStartOf="@id/tvCategory">
 
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/teste"
-                app:tint="#FBB03B"
-                android:contentDescription="Avaliação" />
+            <TextView
+                android:text="★"
+                android:textColor="#FFC107"
+                android:textSize="16sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/tvRating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:textColor="#FFFFFF"
+                tools:text="4.9"
                 android:textStyle="bold"
-                tools:text="4.8 (120)" />
+                android:textColor="#333333"
+                android:layout_marginStart="4dp"/>
+
+            <TextView
+                android:id="@+id/tvReviewCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="(120)"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                android:layout_marginStart="4dp"/>
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btnFavorite"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/teste"
-            app:tint="#FBB03B"
-            android:contentDescription="Adicionar aos favoritos"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSchedule"
-            android:layout_width="0dp"
+        <Button
+            android:id="@+id/btnBookNow"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Agendar Agora"
-            android:backgroundTint="#FBB03B"
-            android:textColor="#000000"
+            android:text="Agendar"
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ratingLayout" />
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/tvCategory"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

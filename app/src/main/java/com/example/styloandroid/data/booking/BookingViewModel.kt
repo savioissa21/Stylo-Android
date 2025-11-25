@@ -27,6 +27,16 @@ class BookingViewModel : ViewModel() {
 
     fun scheduleService(providerId: String, businessName: String, service: Service, timestamp: Long) {
         viewModelScope.launch {
+            _bookingStatus.value = null // Limpa status anterior
+
+            // 1. VERIFICAÇÃO DE SEGURANÇA (NOVA)
+            val isTaken = repo.isTimeSlotTaken(providerId, timestamp)
+            if (isTaken) {
+                _bookingStatus.value = "⚠️ Horário indisponível! Selecione outro."
+                return@launch
+            }
+
+            // 2. Se passou, cria o agendamento
             val appointment = Appointment(
                 providerId = providerId,
                 businessName = businessName,
@@ -39,7 +49,7 @@ class BookingViewModel : ViewModel() {
             )
 
             if (repo.createAppointment(appointment)) {
-                _bookingStatus.value = "Agendamento realizado com sucesso!"
+                _bookingStatus.value = "Agendamento realizado com sucesso! 🎉"
             } else {
                 _bookingStatus.value = "Erro ao agendar. Tente novamente."
             }

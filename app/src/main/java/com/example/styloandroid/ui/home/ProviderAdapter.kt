@@ -1,72 +1,51 @@
 package com.example.styloandroid.ui.home
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.styloandroid.R
 import com.example.styloandroid.data.ProviderCardData
-import com.example.styloandroid.databinding.ItemProviderCardBinding
 
-/**
- * Adapter para exibir os cards de Profissionais/Estabelecimentos na tela do cliente.
- */
 class ProviderAdapter(
-    private var providers: List<ProviderCardData> = emptyList(),
-    private val onScheduleClicked: (ProviderCardData) -> Unit // Callback de clique
+    private var providers: List<ProviderCardData>,
+    private val onClick: (ProviderCardData) -> Unit
 ) : RecyclerView.Adapter<ProviderAdapter.ProviderViewHolder>() {
-
-    // 1. ViewHolder: Liga as Views do XML do card aos dados
-    inner class ProviderViewHolder(private val binding: ItemProviderCardBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-
-        fun bind(provider: ProviderCardData) {
-            binding.tvBusinessName.text = provider.businessName
-            binding.tvAreaOfWork.text = provider.areaOfWork
-
-            // Formata a avaliação (ex: 4.8 (120))
-            binding.tvRating.text =
-                itemView.context.getString(R.string.provider_rating, provider.rating, provider.reviewCount)
-
-            // ⭐️ Se você usar o Coil (Coil-kt) ou Glide, o código para carregar a imagem seria:
-            /*
-            Glide.with(itemView.context)
-                .load(provider.profileImageUrl)
-                .placeholder(R.drawable.teste) // Ícone de placeholder
-                .into(binding.ivProviderLogo)
-            */
-
-            // Ação de clique principal
-            binding.btnSchedule.setOnClickListener {
-                onScheduleClicked(provider)
-            }
-
-            // Ação do Favorito
-            binding.btnFavorite.setOnClickListener {
-                // TODO: Implementar lógica de favoritar
-            }
-        }
-    }
 
     fun updateList(newList: List<ProviderCardData>) {
         providers = newList
-        notifyDataSetChanged() // Notifica a RecyclerView que os dados mudaram
+        notifyDataSetChanged()
     }
 
-    // 2. Cria o ViewHolder e infla o layout do card
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProviderViewHolder {
-        val binding = ItemProviderCardBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return ProviderViewHolder(binding)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_provider_card, parent, false)
+        return ProviderViewHolder(view)
     }
 
-    // 3. Retorna o tamanho da lista
+    override fun onBindViewHolder(holder: ProviderViewHolder, position: Int) {
+        val provider = providers[position]
+        holder.bind(provider)
+    }
+
     override fun getItemCount() = providers.size
 
-    // 4. Liga o dado à View específica
-    override fun onBindViewHolder(holder: ProviderViewHolder, position: Int) {
-        holder.bind(providers[position])
+    inner class ProviderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvName: TextView = itemView.findViewById(R.id.tvBusinessName)
+        private val tvCategory: TextView = itemView.findViewById(R.id.tvCategory)
+        private val tvRating: TextView = itemView.findViewById(R.id.tvRating)
+        private val btnBook: Button = itemView.findViewById(R.id.btnBookNow)
+
+        fun bind(provider: ProviderCardData) {
+            tvName.text = provider.businessName
+            tvCategory.text = provider.areaOfWork
+            tvRating.text = provider.rating.toString()
+
+            // Clique tanto no card quanto no botão levam ao detalhe
+            itemView.setOnClickListener { onClick(provider) }
+            btnBook.setOnClickListener { onClick(provider) }
+        }
     }
 }

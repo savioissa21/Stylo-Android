@@ -49,7 +49,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     when (res.role) {
                         "profissional" -> {
                             // Redireciona para a Home do Estabelecimento (Seu HomeFragment atual)
-                            findNavController().navigate(R.id.action_login_to_home)
+                            findNavController().navigate(R.id.providerAgendaFragment)
                         }
                         "cliente" -> {
                             // Redireciona para a Home do Cliente (Você precisará criar esse Fragment e destino)
