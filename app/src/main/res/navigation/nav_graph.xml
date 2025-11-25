@@ -94,12 +94,6 @@
         tools:layout="@layout/fragment_establishment_detail" />
 
     <fragment
-        android:id="@+id/servicesFragment"
-        android:name="com.example.styloandroid.ui.management.ServicesFragment"
-        android:label="Meus Serviços"
-        tools:layout="@layout/fragment_services" />
-
-    <fragment
         android:id="@+id/providerAgendaFragment"
         android:name="com.example.styloandroid.ui.management.ProviderAgendaFragment"
         android:label="Minha Agenda"
@@ -114,5 +108,19 @@
     <action
         android:id="@+id/action_client_home_to_appointments"
         app:destination="@id/clientAppointmentsFragment" />
+
+    <action
+        android:id="@+id/action_home_to_services"
+        app:destination="@id/servicesFragment" />
+
+    <action
+        android:id="@+id/action_home_to_agenda"
+        app:destination="@id/providerAgendaFragment" />
+
+    <fragment
+        android:id="@+id/servicesFragment"
+        android:name="com.example.styloandroid.ui.management.ServicesFragment"
+        android:label="Meus Serviços"
+        tools:layout="@layout/fragment_services" />
 
 </navigation>

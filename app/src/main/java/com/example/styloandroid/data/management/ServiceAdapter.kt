@@ -1,34 +1,43 @@
-package com.example.styloandroid.ui.management
+package com.example.styloandroid.data.management
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.styloandroid.databinding.ItemServiceBinding
+import com.example.styloandroid.R
 import com.example.styloandroid.data.model.Service
 
 class ServiceAdapter(
     private var list: List<Service> = emptyList(),
-    private val onDeleteClick: (String) -> Unit
-) : RecyclerView.Adapter<ServiceAdapter.Holder>() {
+    private val onDeleteClick: (Service) -> Unit
+) : RecyclerView.Adapter<ServiceAdapter.ViewHolder>() {
 
-    inner class Holder(val b: ItemServiceBinding) : RecyclerView.ViewHolder(b.root)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        return Holder(ItemServiceBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-    }
-
-    override fun onBindViewHolder(holder: Holder, position: Int) {
-        val item = list[position]
-        holder.b.tvServiceName.text = item.name
-        holder.b.tvServiceDetails.text = "${item.durationMin} min • R$ ${String.format("%.2f", item.price)}"
-
-        holder.b.btnDelete.setOnClickListener { onDeleteClick(item.id) }
-    }
-
-    override fun getItemCount() = list.size
-
-    fun update(newList: List<Service>) {
+    fun updateList(newList: List<Service>) {
         list = newList
         notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_manage_service, parent, false)
+        return ViewHolder(v)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(list[position])
+    override fun getItemCount() = list.size
+
+    inner class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+        val tvName: TextView = v.findViewById(R.id.tvName)
+        val tvPrice: TextView = v.findViewById(R.id.tvPrice)
+        val tvDuration: TextView = v.findViewById(R.id.tvDuration)
+        val btnDelete: ImageButton = v.findViewById(R.id.btnDelete)
+
+        fun bind(item: Service) {
+            tvName.text = item.name
+            tvPrice.text = "R$ ${item.price}"
+            tvDuration.text = "• ${item.durationMin} min"
+            btnDelete.setOnClickListener { onDeleteClick(item) }
+        }
     }
 }
