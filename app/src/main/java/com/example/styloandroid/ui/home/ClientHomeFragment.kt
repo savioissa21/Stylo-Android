@@ -65,25 +65,33 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
     }
 
     private fun setupRecyclerView() {
-        // 1. Crie o adapter UMA VEZ com uma lista vazia
+        // O segredo está aqui: passar a lógica de navegação no lambda
         providerAdapter = ProviderAdapter(emptyList()) { provider ->
-            Toast.makeText(requireContext(), "Agendar com ${provider.businessName}", Toast.LENGTH_SHORT).show()
+
+            // Cria o pacote de dados para passar o ID do estabelecimento
+            val bundle = Bundle().apply {
+                putString("providerId", provider.id)
+                putString("businessName", provider.businessName)
+            }
+
+            // Navega para a tela de detalhes (CERTIFIQUE-SE que essa action existe no nav_graph)
+            findNavController().navigate(R.id.action_client_home_to_detail, bundle)
         }
 
-        // 2. Configure a RecyclerView
         binding.rvProviders.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = providerAdapter
         }
 
-        // 3. Observe e chame o método de atualização
         homeViewModel.providers.observe(viewLifecycleOwner) { providersList ->
             if (providersList.isNullOrEmpty()) {
-                Toast.makeText(requireContext(), "Nenhum provedor encontrado", Toast.LENGTH_SHORT).show()
+                // Se a lista estiver vazia, avisa. Isso ajuda a saber se o problema é layout ou dados.
+                Toast.makeText(requireContext(), "Nenhum estabelecimento encontrado.", Toast.LENGTH_SHORT).show()
             }
-            providerAdapter.updateList(providersList) // ✨ ATUALIZA A LISTA EXISTENTE
+            providerAdapter.updateList(providersList)
         }
     }
+
 
     private fun setupActionListeners() {
         binding.btnLogoutClient.setOnClickListener {
