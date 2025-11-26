@@ -4,7 +4,9 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.styloandroid.R
 import com.example.styloandroid.data.model.Appointment
@@ -13,7 +15,8 @@ import java.util.Calendar
 import java.util.Locale
 
 class ClientAppointmentsAdapter(
-    private var list: List<Appointment> = emptyList()
+    private var list: List<Appointment> = emptyList(),
+    private val onRateClick: (Appointment) -> Unit = {} // Novo Callback
 ) : RecyclerView.Adapter<ClientAppointmentsAdapter.ViewHolder>() {
 
     fun updateList(newList: List<Appointment>) {
@@ -40,31 +43,35 @@ class ClientAppointmentsAdapter(
         private val tvService: TextView = itemView.findViewById(R.id.tvServiceName)
         private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
         private val tvStatus: TextView = itemView.findViewById(R.id.tvStatusBadge)
+        private val btnRate: Button = itemView.findViewById(R.id.btnRate) // Novo
 
         fun bind(item: Appointment) {
-            // Formatar Data (Dia e Mês separados)
             val cal = Calendar.getInstance().apply { timeInMillis = item.date }
             tvDay.text = cal.get(Calendar.DAY_OF_MONTH).toString()
             tvMonth.text = SimpleDateFormat("MMM", Locale("pt", "BR")).format(cal.time).uppercase()
 
-            // Formatar Hora
             val sdfTime = SimpleDateFormat("HH:mm", Locale.getDefault())
             tvTime.text = sdfTime.format(cal.time)
 
             tvBusiness.text = item.businessName
-            tvService.text = item.serviceName
+            // Mostra o nome do profissional se disponível
+            val serviceText = if (item.employeeName.isNotEmpty()) 
+                "${item.serviceName} com ${item.employeeName}" 
+            else 
+                item.serviceName
+            tvService.text = serviceText
 
-            // Status Visual
+            // Lógica de Cores
             when (item.status) {
                 "pending" -> {
                     tvStatus.text = "PENDENTE"
-                    tvStatus.setTextColor(Color.parseColor("#EF6C00")) // Laranja Escuro
-                    tvStatus.setBackgroundColor(Color.parseColor("#FFF3E0")) // Laranja Claro
+                    tvStatus.setTextColor(Color.parseColor("#EF6C00"))
+                    tvStatus.setBackgroundColor(Color.parseColor("#FFF3E0"))
                 }
                 "confirmed" -> {
                     tvStatus.text = "CONFIRMADO"
-                    tvStatus.setTextColor(Color.parseColor("#2E7D32")) // Verde Escuro
-                    tvStatus.setBackgroundColor(Color.parseColor("#E8F5E9")) // Verde Claro
+                    tvStatus.setTextColor(Color.parseColor("#2E7D32"))
+                    tvStatus.setBackgroundColor(Color.parseColor("#E8F5E9"))
                 }
                 "finished" -> {
                     tvStatus.text = "CONCLUÍDO"
@@ -76,6 +83,17 @@ class ClientAppointmentsAdapter(
                     tvStatus.setTextColor(Color.RED)
                     tvStatus.setBackgroundColor(Color.parseColor("#FFEBEE"))
                 }
+            }
+
+            // Lógica do Botão Avaliar
+            // Só mostra se estiver CONCLUÍDO e AINDA NÃO TIVER avaliação
+            if (item.status == "finished" && !item.hasReview) {
+                btnRate.isVisible = true
+                btnRate.setOnClickListener {
+                    onRateClick(item)
+                }
+            } else {
+                btnRate.isVisible = false
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.example.styloandroid.data.booking
 
+import com.example.styloandroid.data.auth.AppUser
 import com.example.styloandroid.data.model.Appointment
+import com.example.styloandroid.data.model.Review
 import com.example.styloandroid.data.model.Service
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -11,7 +13,6 @@ class BookingRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // Busca serviços de UM prestador específico (providerId)
     suspend fun getServicesForProvider(providerId: String): List<Service> {
         return try {
             val snapshot = db.collection("users")
@@ -25,15 +26,39 @@ class BookingRepository {
         }
     }
 
-    // Salva o agendamento na sub-coleção do Prestador E na coleção do Cliente (opcional, mas bom pra histórico)
+    /**
+     * Busca a equipe completa: O Gestor (Dono) + Funcionários vinculados
+     */
+    suspend fun getTeamForEstablishment(managerId: String): List<AppUser> {
+        return try {
+            val team = mutableListOf<AppUser>()
+
+            // 1. Busca o próprio Gestor (Ele também atende?)
+            val managerDoc = db.collection("users").document(managerId).get().await()
+            managerDoc.toObject(AppUser::class.java)?.let { team.add(it) }
+
+            // 2. Busca Funcionários vinculados a este estabelecimento
+            val employeesSnapshot = db.collection("users")
+                .whereEqualTo("establishmentId", managerId)
+                .whereEqualTo("role", "FUNCIONARIO")
+                .get()
+                .await()
+            
+            team.addAll(employeesSnapshot.toObjects(AppUser::class.java))
+            
+            team
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
     suspend fun createAppointment(appointment: Appointment): Boolean {
         val user = auth.currentUser ?: return false
         return try {
-            // 1. Gera ID
-            val ref = db.collection("appointments").document() // Coleção global ou sub-coleção
+            val ref = db.collection("appointments").document()
+            // Preenche ID e ID do Cliente logado
             val finalAppointment = appointment.copy(id = ref.id, clientId = user.uid)
-
-            // 2. Salva (Vamos salvar numa coleção raiz 'appointments' para facilitar por enquanto)
             ref.set(finalAppointment).await()
             true
         } catch (e: Exception) {
@@ -42,41 +67,57 @@ class BookingRepository {
         }
     }
 
-    suspend fun getProviderAppointments(): List<Appointment> {
-        val uid = auth.currentUser?.uid ?: return emptyList()
+    /**
+     * VERIFICAÇÃO DE CHOQUE DE HORÁRIO
+     * Agora verifica se o *EmployeeId* específico está ocupado naquele horário.
+     */
+    suspend fun isTimeSlotTaken(employeeId: String, timestamp: Long, durationMin: Int): Boolean {
         return try {
+            // Margem de segurança: Verifica se existe agendamento começando no mesmo horário
             val snapshot = db.collection("appointments")
-                .whereEqualTo("providerId", uid)
-                .orderBy("date", Query.Direction.ASCENDING) // Ordena por data/hora
+                .whereEqualTo("employeeId", employeeId) // Quem vai atender?
+                .whereEqualTo("date", timestamp)        // Quando?
+                .whereNotEqualTo("status", "canceled")
                 .get()
                 .await()
+            
+            !snapshot.isEmpty
+        } catch (e: Exception) {
+            e.printStackTrace()
+            true // Na dúvida, bloqueia
+        }
+    }
+
+    // --- Métodos de Listagem (Mantidos/Atualizados) ---
+
+    suspend fun getProviderAppointments(): List<Appointment> {
+        val uid = auth.currentUser?.uid ?: return emptyList()
+        
+        return try {
+            val userDoc = db.collection("users").document(uid).get().await()
+            val role = userDoc.getString("role")
+
+            val query = if (role == "FUNCIONARIO") {
+                db.collection("appointments").whereEqualTo("employeeId", uid)
+            } else {
+                // Gestor vê tudo do estabelecimento
+                db.collection("appointments").whereEqualTo("providerId", uid)
+            }
+
+            val snapshot = query.orderBy("date", Query.Direction.ASCENDING).get().await()
             snapshot.toObjects(Appointment::class.java)
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()
         }
     }
-
-    // 2. Atualiza o status (ex: "confirmed", "finished", "canceled")
-    suspend fun updateAppointmentStatus(appointmentId: String, newStatus: String): Boolean {
-        return try {
-            db.collection("appointments")
-                .document(appointmentId)
-                .update("status", newStatus)
-                .await()
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
+    
     suspend fun getClientAppointments(): List<Appointment> {
         val uid = auth.currentUser?.uid ?: return emptyList()
         return try {
             val snapshot = db.collection("appointments")
                 .whereEqualTo("clientId", uid)
-                .orderBy("date", Query.Direction.DESCENDING) // Do mais recente para o mais antigo
+                .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .await()
             snapshot.toObjects(Appointment::class.java)
@@ -86,19 +127,31 @@ class BookingRepository {
         }
     }
 
-    // 4. REGRA DE OURO: Verifica se o horário já está ocupado
-    suspend fun isTimeSlotTaken(providerId: String, timestamp: Long): Boolean {
+    suspend fun updateAppointmentStatus(appointmentId: String, newStatus: String): Boolean {
         return try {
-            val snapshot = db.collection("appointments")
-                .whereEqualTo("providerId", providerId)
-                .whereEqualTo("date", timestamp)
-                .whereNotEqualTo("status", "canceled") // Ignora cancelados
-                .get()
+            db.collection("appointments").document(appointmentId).update("status", newStatus).await()
+            true
+        } catch (e: Exception) { false }
+    }
+
+    // --- NOVO: Enviar Avaliação ---
+    suspend fun submitReview(review: Review): Boolean {
+        return try {
+            // 1. Salva a Review na coleção global 'reviews'
+            val ref = db.collection("reviews").document()
+            val finalReview = review.copy(id = ref.id)
+            ref.set(finalReview).await()
+
+            // 2. Marca o agendamento como avaliado (hasReview = true)
+            // Isso impede que o usuário avalie o mesmo serviço 2 vezes
+            db.collection("appointments").document(review.appointmentId)
+                .update("hasReview", true)
                 .await()
-            !snapshot.isEmpty // Retorna true se já tiver agendamento (ocupado)
+
+            true
         } catch (e: Exception) {
             e.printStackTrace()
-            true // Na dúvida, bloqueia para evitar conflito
+            false
         }
     }
 

@@ -1,6 +1,7 @@
 package com.example.styloandroid.data.auth
+
 /**
- * Modelo de dados para o Endereço Comercial (baseado no Step 4 do React)
+ * Modelo de dados para o Endereço Comercial (Para o GESTOR)
  */
 data class BusinessAddress(
     val zipCode: String = "",
@@ -9,12 +10,12 @@ data class BusinessAddress(
     val neighborhood: String = "",
     val city: String = "",
     val state: String = "",
-    val lat: Double? = null, // Latitude
-    val lng: Double? = null  // Longitude
+    val lat: Double? = null,
+    val lng: Double? = null
 )
 
 /**
- * Modelo de dados para Links Sociais (baseado no Step 3 do React)
+ * Modelo de dados para Links Sociais (Para o GESTOR)
  */
 data class SocialLinks(
     val instagram: String? = null,
@@ -23,30 +24,44 @@ data class SocialLinks(
 )
 
 /**
- * Modelo principal do Usuário, agora com campos de Cliente e Prestador.
+ * Modelo principal do Usuário.
+ *
+ * ROLES (Tipos de Usuário):
+ * 1. "CLIENTE": Usuário comum que agenda serviços.
+ * 2. "GESTOR": Dono do estabelecimento (antigo "profissional"). Tem acesso total.
+ * 3. "FUNCIONARIO": Prestador que trabalha para um Gestor. Vê apenas sua agenda.
  */
 data class AppUser(
-    // --- Campos de Acesso (Step 1) ---
+    // --- Campos Comuns (Todos os usuários) ---
     val uid: String = "",
     val name: String = "",
     val email: String = "",
-    val role: String = "", // "cliente" ou "profissional"
+    
+    /**
+     * Define o tipo de acesso: "CLIENTE", "GESTOR" ou "FUNCIONARIO"
+     */
+    val role: String = "",
+    
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
+    val photoUrl: String? = null, // Foto de perfil do usuário
 
-    // --- Campos do Prestador (Step 2) ---
+    // --- Campos Específicos do FUNCIONÁRIO ---
+    /**
+     * ID do Gestor/Estabelecimento ao qual este funcionário pertence.
+     * Se for GESTOR ou CLIENTE, este campo fica null.
+     */
+    val establishmentId: String? = null,
+
+    // --- Campos Específicos do GESTOR (Dono do Negócio) ---
     val businessName: String? = null,
     val cnpj: String? = null,
     val businessPhone: String? = null,
-    val areaOfWork: String? = null,
+    val areaOfWork: String? = null, // Ex: Barbearia, Salão de Beleza
 
-    // --- Campos do Prestador (Step 3) ---
     val socialLinks: SocialLinks? = null,
-    val paymentMethods: List<String>? = null, // Lista com "pix", "credit_card", "cash"
-
-    // --- Campos do Prestador (Step 4) ---
+    val paymentMethods: List<String>? = null, // ["pix", "credit_card", "cash"]
     val businessAddress: BusinessAddress? = null,
 
-    // --- Outros ---
-    val subscriptionStatus: String? = "trial" // Pego do seu código React
+    val subscriptionStatus: String? = "trial" // trial, active, expired
 )

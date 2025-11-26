@@ -18,14 +18,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentHomeBinding.bind(view)
 
-        // Navegação para a Agenda (Já criamos)
+        // Navegação para a Agenda
         b.cardAgenda.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_agenda)
         }
 
-        // Navegação para Serviços (Vamos criar agora)
+        // Navegação para Serviços
         b.cardServices.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_services)
+        }
+
+        // --- NOVA NAVEGAÇÃO: Minha Equipe ---
+        b.cardTeam.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_teamManagement)
         }
 
         b.cardProfile.setOnClickListener {

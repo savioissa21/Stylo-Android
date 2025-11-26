@@ -2,13 +2,27 @@ package com.example.styloandroid.data.model
 
 data class Appointment(
     val id: String = "",
+    
+    // Cliente
     val clientId: String = "",
     val clientName: String = "",
-    val providerId: String = "",      // Antes podia estar como 'establishmentId'
-    val businessName: String = "",    // Este campo pode estar faltando
+    
+    // Estabelecimento (Dono/Gestor)
+    val providerId: String = "",      
+    val businessName: String = "",    
+    
+    // Profissional que executará o serviço (Pode ser o Dono ou um Funcionário)
+    val employeeId: String = "",      
+    val employeeName: String = "",    
+
+    // Serviço
     val serviceId: String = "",
     val serviceName: String = "",
     val price: Double = 0.0,
-    val date: Long = 0L,              // Antes podia estar como 'dateTimestamp'
-    val status: String = "pending"
+    val durationMin: Int = 30, // Importante salvar a duração para calcular horário de término
+    
+    // Dados do Agendamento
+    val date: Long = 0L,              
+    val status: String = "pending", // pending, confirmed, finished, canceled
+    val hasReview: Boolean = false  // Para o passo 5
 )

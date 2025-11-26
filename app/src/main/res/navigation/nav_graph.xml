@@ -70,6 +70,11 @@
         <action
             android:id="@+id/action_home_to_agenda"
             app:destination="@id/providerAgendaFragment" />
+
+        <!-- NOVA AÇÃO -->
+        <action
+            android:id="@+id/action_home_to_teamManagement"
+            app:destination="@id/teamManagementFragment" />
     </fragment>
 
     <fragment
@@ -85,6 +90,9 @@
         <action
             android:id="@+id/action_client_home_to_detail"
             app:destination="@id/establishmentDetailFragment" />
+        <action
+            android:id="@+id/action_client_home_to_appointments"
+            app:destination="@id/clientAppointmentsFragment" />
     </fragment>
 
     <fragment
@@ -105,22 +113,17 @@
         android:label="Meus Agendamentos"
         tools:layout="@layout/fragment_client_appointments" />
 
-    <action
-        android:id="@+id/action_client_home_to_appointments"
-        app:destination="@id/clientAppointmentsFragment" />
-
-    <action
-        android:id="@+id/action_home_to_services"
-        app:destination="@id/servicesFragment" />
-
-    <action
-        android:id="@+id/action_home_to_agenda"
-        app:destination="@id/providerAgendaFragment" />
-
     <fragment
         android:id="@+id/servicesFragment"
         android:name="com.example.styloandroid.ui.management.ServicesFragment"
         android:label="Meus Serviços"
         tools:layout="@layout/fragment_services" />
+
+    <!-- NOVO DESTINO -->
+    <fragment
+        android:id="@+id/teamManagementFragment"
+        android:name="com.example.styloandroid.ui.management.TeamManagementFragment"
+        android:label="Minha Equipe"
+        tools:layout="@layout/fragment_team_management" />
 
 </navigation>

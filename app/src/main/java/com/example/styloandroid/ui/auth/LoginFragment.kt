@@ -21,13 +21,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentLoginBinding.bind(view)
 
-        // Se já estiver autenticado, pula para Home
-        //AuthRepository().currentUserId()?.let {
-          //  findNavController().navigate(R.id.action_login_to_home)
-            //return
-        //}
-
-        // Clique do botão de login
         b.btnLogin.setOnClickListener {
             vm.login(
                 b.etEmail.text?.toString().orEmpty(),
@@ -35,29 +28,26 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             )
         }
 
-        // Navegar para tela de cadastro
         b.btnGoRegister.setOnClickListener {
             findNavController().navigate(R.id.action_login_to_register)
         }
 
-        // Observar estado do ViewModel
         vm.state.observe(viewLifecycleOwner) { res: AuthState ->
             when (res) {
                 is AuthState.Loading -> b.btnLogin.isEnabled = false
                 is AuthState.Success -> {
                     b.btnLogin.isEnabled = true
+                    // Roteamento baseado nos novos ROLES
                     when (res.role) {
-                        "profissional" -> {
-                            // Redireciona para a Home do Estabelecimento (Seu HomeFragment atual)
-                            findNavController().navigate(R.id.providerAgendaFragment)
-                        }
-                        "cliente" -> {
-                            // Redireciona para a Home do Cliente (Você precisará criar esse Fragment e destino)
-                            findNavController().navigate(R.id.action_login_to_client_home)
-                        }
-                        else -> {
-                            Toast.makeText(requireContext(), "Erro: Tipo de usuário inválido.", Toast.LENGTH_SHORT).show()
-                        }
+                        "GESTOR" -> findNavController().navigate(R.id.action_login_to_home)
+                        "FUNCIONARIO" -> findNavController().navigate(R.id.providerAgendaFragment) // Cria rota direta se precisar
+                        "CLIENTE" -> findNavController().navigate(R.id.action_login_to_client_home)
+                        
+                        // Fallback para versões antigas do app
+                        "profissional" -> findNavController().navigate(R.id.action_login_to_home)
+                        "cliente" -> findNavController().navigate(R.id.action_login_to_client_home)
+                        
+                        else -> Toast.makeText(requireContext(), "Tipo de usuário desconhecido.", Toast.LENGTH_SHORT).show()
                     }
                 }
                 is AuthState.Error -> {
@@ -68,8 +58,5 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _b = null
-    }
+    override fun onDestroyView() { super.onDestroyView(); _b = null }
 }
