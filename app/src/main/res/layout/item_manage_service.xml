@@ -4,14 +4,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
+
+        <!-- Ícone do Serviço -->
+        <ImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_menu_cut"
+            app:tint="@color/black"
+            android:background="@drawable/ic_launcher_background"
+            android:backgroundTint="#F5F5F5"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <TextView
             android:id="@+id/tvName"
@@ -20,7 +36,9 @@
             android:text="Corte Masculino"
             android:textStyle="bold"
             android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
+            android:textColor="#212121"
+            android:layout_marginStart="16dp"
+            app:layout_constraintStart_toEndOf="@id/ivIcon"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnDelete"/>
 
@@ -32,7 +50,7 @@
             android:textColor="#4CAF50"
             android:textStyle="bold"
             app:layout_constraintTop_toBottomOf="@id/tvName"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tvName"
             android:layout_marginTop="4dp"/>
 
         <TextView
@@ -44,6 +62,32 @@
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toEndOf="@id/tvPrice"
             app:layout_constraintBottom_toBottomOf="@id/tvPrice"/>
+            
+        <!-- Indicador de Equipe -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/tvPrice"
+            app:layout_constraintStart_toStartOf="@id/tvPrice">
+            
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@android:drawable/ic_menu_myplaces"
+                app:tint="#9E9E9E"/>
+                
+            <TextView
+                android:id="@+id/tvTeamCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3 profissionais"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/btnDelete"

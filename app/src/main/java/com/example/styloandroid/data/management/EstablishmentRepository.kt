@@ -1,6 +1,7 @@
 package com.example.styloandroid.data.management
 
-import com.example.styloandroid.data.model.Service // Certifica-te que criaste o modelo no Passo 1
+import com.example.styloandroid.data.auth.AppUser
+import com.example.styloandroid.data.model.Service
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -36,7 +37,7 @@ class EstablishmentRepository {
         }
     }
 
-    // Opcional: Função para apagar serviço
+    // Apaga serviço
     suspend fun deleteService(serviceId: String): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         return try {
@@ -44,6 +45,34 @@ class EstablishmentRepository {
             true
         } catch (e: Exception) {
             false
+        }
+    }
+
+    // NOVO: Busca a equipe para exibir no Dialog de seleção
+    suspend fun getMyTeamMembers(): List<AppUser> {
+        val uid = auth.currentUser?.uid ?: return emptyList()
+        return try {
+            // Busca o próprio Gestor primeiro
+            val managerDoc = db.collection("users").document(uid).get().await()
+            val manager = managerDoc.toObject(AppUser::class.java)
+            
+            // Busca Funcionários
+            val employeesSnapshot = db.collection("users")
+                .whereEqualTo("establishmentId", uid)
+                .whereEqualTo("role", "FUNCIONARIO")
+                .get()
+                .await()
+            
+            val team = employeesSnapshot.toObjects(AppUser::class.java).toMutableList()
+            
+            // Adiciona o gestor no topo da lista (ele também pode trabalhar)
+            if (manager != null) {
+                team.add(0, manager)
+            }
+            
+            team
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 }

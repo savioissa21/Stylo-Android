@@ -5,5 +5,9 @@ data class Service(
     val name: String = "",         // Ex: "Corte Degrade"
     val description: String = "",  // Ex: "Corte na tesoura e máquina"
     val price: Double = 0.0,       // Ex: 35.00
-    val durationMin: Int = 30      // Duração em minutos (importante para a agenda)
+    val durationMin: Int = 30,     // Duração em minutos
+    
+    // NOVO: Lista de IDs dos profissionais habilitados para este serviço
+    // Se a lista estiver vazia, assume-se que apenas o Gestor faz, ou ninguém.
+    val employeeIds: List<String> = emptyList() 
 )
