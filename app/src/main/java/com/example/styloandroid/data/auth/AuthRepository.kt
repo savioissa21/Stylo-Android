@@ -1,7 +1,7 @@
 package com.example.styloandroid.data.auth
 
 import android.util.Log
-import com.example.styloandroid.ui.auth.RegisterViewModel // Importe o RegisterData
+import com.example.styloandroid.ui.auth.RegisterViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,101 +17,76 @@ class AuthRepository(
     suspend fun login(email: String, pass: String): AuthResult =
         withContext(Dispatchers.IO) {
             try {
+                // 1. Tenta login normal no Firebase
                 val res = auth.signInWithEmailAndPassword(email, pass).await()
                 val uid = res.user?.uid ?: return@withContext AuthResult.Error("Usuário não encontrado")
-
-                val userDoc = db.collection("users").document(uid).get().await()
-                val appUser = userDoc.toObject(AppUser::class.java)
-                val role = appUser?.role ?: return@withContext AuthResult.Error("Perfil de usuário incompleto.")
-
-                AuthResult.Success(uid, role)
+                return@withContext fetchUserRole(uid)
 
             } catch (e: Exception) {
-                AuthResult.Error(e.message ?: "Falha no login")
-            }
-        }
+                // 2. SE FALHAR: Verifica se é uma conta pré-criada pelo Gestor
+                try {
+                    val tempDoc = db.collection("temp_accounts").document(email).get().await()
 
-    suspend fun getAppUser(): AppUser? = withContext(Dispatchers.IO) {
-        val uid = auth.currentUser?.uid ?: return@withContext null
-        try {
-            val doc = db.collection("users").document(uid).get().await()
-            return@withContext doc.toObject(AppUser::class.java)
-        } catch (e: Exception) {
-            Log.e("AuthRepository", "Erro ao buscar AppUser: ${e.message}")
-            return@withContext null
-        }
-    }
+                    if (tempDoc.exists() && tempDoc.getString("password") == pass) {
+                        // ACHOU! Cria a conta real agora automaticamente
+                        val name = tempDoc.getString("name") ?: "Funcionário"
+                        val managerId = tempDoc.getString("managerId")
 
-    /**
-     * REGISTRO INTELIGENTE:
-     * Verifica convites antes de criar o usuário final.
-     */
-    suspend fun register(data: RegisterViewModel.RegisterData): AuthResult =
-        withContext(Dispatchers.IO) {
-            try {
-                // 1. Cria usuário no Firebase Auth
-                val res = auth.createUserWithEmailAndPassword(data.email, data.pass).await()
-                val user = res.user ?: return@withContext AuthResult.Error("Usuário nulo")
+                        // Cria no Auth
+                        val createRes = auth.createUserWithEmailAndPassword(email, pass).await()
+                        val user = createRes.user!!
 
-                // 2. Atualiza nome no perfil
-                val profile = userProfileChangeRequest { displayName = data.name }
-                user.updateProfile(profile).await()
+                        user.updateProfile(userProfileChangeRequest { displayName = name }).await()
 
-                // --- LÓGICA DE CONVITE E PAPEIS ---
-                var finalRole = data.role
-                var establishmentId: String? = null
+                        // Cria User no Firestore
+                        val appUser = AppUser(
+                            uid = user.uid,
+                            name = name,
+                            email = email,
+                            role = "FUNCIONARIO",
+                            establishmentId = managerId
+                        )
+                        db.collection("users").document(user.uid).set(appUser).await()
 
-                // Normaliza roles da UI para o Banco
-                if (finalRole == "profissional") finalRole = "GESTOR"
-                if (finalRole == "cliente") finalRole = "CLIENTE"
+                        // Deleta a temp
+                        db.collection("temp_accounts").document(email).delete()
 
-                // 3. Verifica se existe convite para este email
-                val inviteRef = db.collection("invites").document(data.email)
-                val inviteDoc = inviteRef.get().await()
-
-                if (inviteDoc.exists()) {
-                    val status = inviteDoc.getString("status")
-                    // Se houver convite pendente, vira FUNCIONARIO automaticamente
-                    if (status == "pending") {
-                        finalRole = "FUNCIONARIO"
-                        establishmentId = inviteDoc.getString("managerId") // Vincula ao patrão
-
-                        // Marca convite como aceito
-                        inviteRef.update("status", "accepted")
+                        return@withContext AuthResult.Success(user.uid, "FUNCIONARIO")
                     }
+                } catch (e2: Exception) {
+                    e2.printStackTrace()
                 }
 
-                // 4. Cria o objeto AppUser completo
-                val appUser = AppUser(
-                    uid = user.uid,
-                    name = data.name,
-                    email = data.email,
-                    role = finalRole, // GESTOR, FUNCIONARIO ou CLIENTE
-                    establishmentId = establishmentId, // Preenchido se for funcionário
-                    createdAt = System.currentTimeMillis(),
-                    updatedAt = System.currentTimeMillis(),
-                    
-                    // Campos do Gestor (podem ir nulos se for Funcionário ou Cliente)
-                    businessName = data.businessName,
-                    cnpj = data.cnpj,
-                    businessPhone = data.businessPhone,
-                    areaOfWork = data.areaOfWork,
-                    socialLinks = data.socialLinks,
-                    paymentMethods = data.paymentMethods,
-                    businessAddress = data.businessAddress,
-                    subscriptionStatus = "trial"
-                )
-
-                // 5. Salva no Firestore
-                db.collection("users").document(user.uid).set(appUser).await()
-
-                // Retorna sucesso com o Role final definido
-                AuthResult.Success(user.uid, finalRole)
-            } catch (e: Exception) {
-                AuthResult.Error(e.message ?: "Falha no registro")
+                AuthResult.Error("Login falhou. Verifique e-mail e senha.")
             }
         }
 
+    private suspend fun fetchUserRole(uid: String): AuthResult {
+        val userDoc = db.collection("users").document(uid).get().await()
+        val appUser = userDoc.toObject(AppUser::class.java)
+        val role = appUser?.role ?: return AuthResult.Error("Perfil incompleto.")
+        return AuthResult.Success(uid, role)
+    }
+
+    // ... (Mantenha register, getAppUser, etc) ...
+    suspend fun register(data: RegisterViewModel.RegisterData): AuthResult = withContext(Dispatchers.IO) {
+        // Mantenha sua lógica original de registro aqui, ou use a simplificada se preferir
+        try {
+            val res = auth.createUserWithEmailAndPassword(data.email, data.pass).await()
+            val user = res.user!!
+            val finalRole = if (data.role == "profissional") "GESTOR" else "CLIENTE"
+
+            val appUser = AppUser(uid = user.uid, name = data.name, email = data.email, role = finalRole)
+            db.collection("users").document(user.uid).set(appUser).await()
+
+            AuthResult.Success(user.uid, finalRole)
+        } catch (e: Exception) { AuthResult.Error(e.message ?: "Erro") }
+    }
+
     fun currentUserId(): String? = auth.currentUser?.uid
+    suspend fun getAppUser(): AppUser? = withContext(Dispatchers.IO) {
+        val uid = auth.currentUser?.uid ?: return@withContext null
+        db.collection("users").document(uid).get().await().toObject(AppUser::class.java)
+    }
     fun logout() = auth.signOut()
 }

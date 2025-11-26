@@ -14,8 +14,8 @@ class TeamViewModel : ViewModel() {
     private val _teamList = MutableLiveData<List<AppUser>>()
     val teamList: LiveData<List<AppUser>> = _teamList
 
-    private val _inviteStatus = MutableLiveData<String?>()
-    val inviteStatus: LiveData<String?> = _inviteStatus
+    private val _statusMsg = MutableLiveData<String?>()
+    val statusMsg: LiveData<String?> = _statusMsg
 
     fun loadTeam() {
         viewModelScope.launch {
@@ -23,24 +23,22 @@ class TeamViewModel : ViewModel() {
         }
     }
 
-    fun sendInvite(email: String) {
-        if (email.isBlank()) {
-            _inviteStatus.value = "Por favor, digite um e-mail."
+    fun createEmployee(name: String, email: String, pass: String) {
+        if (name.isBlank() || email.isBlank() || pass.length < 6) {
+            _statusMsg.value = "Preencha tudo corretamente. Senha min 6 caracteres."
             return
         }
-        
+
         viewModelScope.launch {
-            val success = repo.inviteEmployee(email)
+            val success = repo.createEmployeeAccount(name, email, pass)
             if (success) {
-                _inviteStatus.value = "Convite enviado com sucesso! ✅"
+                _statusMsg.value = "Funcionário criado! Passe a senha para ele."
+                loadTeam()
             } else {
-                _inviteStatus.value = "Erro ao enviar convite. Tente novamente."
+                _statusMsg.value = "Erro ao criar funcionário."
             }
         }
     }
-    
-    // Limpa a mensagem após exibir
-    fun clearStatus() {
-        _inviteStatus.value = null
-    }
+
+    fun clearStatus() { _statusMsg.value = null }
 }
