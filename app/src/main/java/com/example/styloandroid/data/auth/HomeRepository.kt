@@ -14,15 +14,14 @@ class HomeRepository {
     suspend fun getProfessionalProviders(): List<AppUser> {
         return try {
             val snapshot = db.collection("users")
-                .whereEqualTo("role", "profissional") // O filtro mágico ✨
+                // CORREÇÃO AQUI: Mude de "profissional" para "GESTOR"
+                .whereEqualTo("role", "GESTOR")
                 .get()
                 .await()
 
-            // Converte os documentos para objetos AppUser
-            snapshot.toObjects<AppUser>()
+            snapshot.toObjects(AppUser::class.java)
         } catch (e: Exception) {
-            Log.e("HomeRepository", "Erro ao buscar profissionais", e)
-            emptyList() // Retorna lista vazia se der erro
+            emptyList()
         }
     }
 }
