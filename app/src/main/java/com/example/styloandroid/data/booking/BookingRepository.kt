@@ -71,20 +71,33 @@ class BookingRepository {
      * VERIFICAÇÃO DE CHOQUE DE HORÁRIO
      * Agora verifica se o *EmployeeId* específico está ocupado naquele horário.
      */
-    suspend fun isTimeSlotTaken(employeeId: String, timestamp: Long, durationMin: Int): Boolean {
+    // Em BookingRepository.kt
+
+    suspend fun isTimeSlotTaken(employeeId: String, newStartTime: Long, durationMin: Int): Boolean {
         return try {
-            // Margem de segurança: Verifica se existe agendamento começando no mesmo horário
+            // Define o fim do novo agendamento
+            val newEndTime = newStartTime + (durationMin * 60 * 1000)
+
+            // Busca agendamentos do funcionário (poderia filtrar pelo dia para otimizar, mas assim funciona)
             val snapshot = db.collection("appointments")
-                .whereEqualTo("employeeId", employeeId) // Quem vai atender?
-                .whereEqualTo("date", timestamp)        // Quando?
-                .whereNotEqualTo("status", "canceled")
+                .whereEqualTo("employeeId", employeeId)
+                .whereNotEqualTo("status", "canceled") // Ignora cancelados
                 .get()
                 .await()
-            
-            !snapshot.isEmpty
+
+            val appointments = snapshot.toObjects(Appointment::class.java)
+
+            // Verifica colisão na memória
+            appointments.any { existing ->
+                val existingStart = existing.date
+                val existingEnd = existingStart + (existing.durationMin * 60 * 1000)
+
+                // Lógica de intersecção de horários
+                (newStartTime < existingEnd && newEndTime > existingStart)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
-            true // Na dúvida, bloqueia
+            true // Bloqueia se der erro por segurança
         }
     }
 

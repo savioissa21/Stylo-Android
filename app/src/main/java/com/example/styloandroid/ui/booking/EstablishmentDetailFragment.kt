@@ -88,28 +88,37 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
     /**
      * Passo 1: Selecionar Profissional
      */
+// Em EstablishmentDetailFragment.kt
+
     private fun showEmployeeSelector(service: Service) {
         if (teamList.isEmpty()) {
-            // Se não carregou equipe ou não tem ninguém, tenta recarregar ou avisa
             Snackbar.make(requireView(), "Carregando profissionais...", Snackbar.LENGTH_SHORT).show()
             vm.loadTeam(providerId)
             return
         }
 
-        // Cria lista de nomes para o Dialog
-        val names = teamList.map { it.name }.toTypedArray()
+        // CORREÇÃO: Filtra apenas quem tem o ID na lista do serviço
+        // Se a lista do serviço estiver vazia, assumimos que o Dono (providerId) faz, ou todos fazem.
+        val qualifiedEmployees = teamList.filter { employee ->
+            service.employeeIds.isEmpty() || service.employeeIds.contains(employee.uid) || service.employeeIds.contains(employee.email)
+        }
+
+        if (qualifiedEmployees.isEmpty()) {
+            Snackbar.make(requireView(), "Nenhum profissional disponível para este serviço.", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        val names = qualifiedEmployees.map { it.name }.toTypedArray()
 
         AlertDialog.Builder(requireContext())
             .setTitle("Escolha o Profissional")
             .setItems(names) { _, which ->
-                val selectedEmployee = teamList[which]
-                // Vai para o Passo 2: Data
+                val selectedEmployee = qualifiedEmployees[which] // Usa a lista filtrada
                 showDateTimePicker(service, selectedEmployee)
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
-
     /**
      * Passo 2 e 3: Data e Hora
      */
@@ -122,6 +131,12 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             calendar.set(Calendar.DAY_OF_MONTH, day)
 
             val timePicker = TimePickerDialog(requireContext(), { _, hour, minute ->
+
+                // VALIDAÇÃO BÁSICA DE HORÁRIO COMERCIAL
+                if (hour < 9 || hour >= 18) {
+                    Snackbar.make(requireView(), "Este estabelecimento só funciona das 09h às 18h.", Snackbar.LENGTH_LONG).show()
+                    return@TimePickerDialog
+                }
                 calendar.set(Calendar.HOUR_OF_DAY, hour)
                 calendar.set(Calendar.MINUTE, minute)
                 calendar.set(Calendar.SECOND, 0)

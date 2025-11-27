@@ -54,6 +54,18 @@ class ManagementViewModel : ViewModel() {
             }
         }
     }
+    fun updateServiceTeam(serviceId: String, selectedEmployees: List<String>) {
+        viewModelScope.launch {
+            val success = repo.updateServiceEmployees(serviceId, selectedEmployees)
+
+            if (success) {
+                _operationStatus.value = "Equipe do serviço atualizada!"
+                loadServices() // Recarrega a lista para garantir
+            } else {
+                _operationStatus.value = "Erro ao atualizar equipe."
+            }
+        }
+    }
 
     fun deleteService(serviceId: String) {
         viewModelScope.launch {

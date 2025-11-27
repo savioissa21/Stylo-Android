@@ -113,14 +113,7 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
                 container.children.forEach {
                     if (it is CheckBox && it.isChecked) selectedIds.add(it.tag.toString())
                 }
-                // Aqui chamamos um metodo de update (vamos reusar o addService por enquanto pois o firebase set sobrescreve se tiver ID, mas precisamos passar o ID do serviço)
-                // Para ser perfeito, o ViewModel deveria ter um updateService.
-                // Vamos deletar e recriar ou criar um updateService no VM.
-                // Como é trabalho, vamos assumir que addService com mesmo ID atualiza se o repo estiver configurado para set(..., SetOptions.merge()).
-
-                // Melhor: Vamos criar um método updateService no ViewModel rapidinho ou deletar/criar.
-                vm.deleteService(service.id) // Remove antigo
-                vm.addService(service.name, service.price, service.durationMin, selectedIds) // Cria novo com lista atualizada
+                vm.updateServiceTeam(service.id, selectedIds)
             }
             .show()
     }

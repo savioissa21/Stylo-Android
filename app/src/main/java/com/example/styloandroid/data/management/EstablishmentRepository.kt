@@ -5,7 +5,7 @@ import com.example.styloandroid.data.model.Service
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
-
+import com.google.firebase.firestore.SetOptions
 class EstablishmentRepository {
 
     private val db = FirebaseFirestore.getInstance()
@@ -34,6 +34,21 @@ class EstablishmentRepository {
             snapshot.toObjects(Service::class.java)
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+
+
+    suspend fun updateServiceEmployees(serviceId: String, employeeIds: List<String>): Boolean {
+        val uid = auth.currentUser?.uid ?: return false
+        return try {
+            db.collection("users").document(uid)
+                .collection("services").document(serviceId)
+                .update("employeeIds", employeeIds)
+                .await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 
