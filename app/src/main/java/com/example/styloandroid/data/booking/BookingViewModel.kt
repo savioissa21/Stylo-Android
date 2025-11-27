@@ -34,6 +34,27 @@ class BookingViewModel : ViewModel() {
             _team.value = repo.getTeamForEstablishment(providerId)
         }
     }
+    fun createAppointment(appointment: Appointment) {
+        viewModelScope.launch {
+            // 1. Verifica no Repositório se o horário está livre
+            // (Se você quiser fazer a validação dupla, senão pode salvar direto)
+            val isTaken = repo.isTimeSlotTaken(appointment.employeeId, appointment.date, appointment.durationMin)
+
+            if (isTaken) {
+                _bookingStatus.value = "Horário indisponível. Tente outro."
+                return@launch
+            }
+
+            // 2. Salva o agendamento
+            val success = repo.createAppointment(appointment)
+
+            if (success) {
+                _bookingStatus.value = "Agendamento confirmado! Aguarde a aprovação."
+            } else {
+                _bookingStatus.value = "Erro ao agendar. Verifique sua conexão."
+            }
+        }
+    }
 
     fun scheduleService(
         providerId: String,

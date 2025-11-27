@@ -7,9 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.styloandroid.data.auth.AppUser
 import com.example.styloandroid.data.management.TeamRepository
 import kotlinx.coroutines.launch
+import com.example.styloandroid.data.model.Service
+import com.example.styloandroid.data.management.EstablishmentRepository
 
 class TeamViewModel : ViewModel() {
     private val repo = TeamRepository()
+
+    private val establishmentRepo = EstablishmentRepository()
 
     private val _teamList = MutableLiveData<List<AppUser>>()
     val teamList: LiveData<List<AppUser>> = _teamList
@@ -17,13 +21,23 @@ class TeamViewModel : ViewModel() {
     private val _statusMsg = MutableLiveData<String?>()
     val statusMsg: LiveData<String?> = _statusMsg
 
+    private val _servicesList = MutableLiveData<List<Service>>()
+
+    val servicesList: LiveData<List<Service>> = _servicesList
+
+    fun loadServicesForDialog() {
+        viewModelScope.launch {
+            _servicesList.value = establishmentRepo.getMyServices()
+        }
+    }
+
     fun loadTeam() {
         viewModelScope.launch {
             _teamList.value = repo.getMyTeam()
         }
     }
 
-    fun createEmployee(name: String, email: String, pass: String) {
+    fun createEmployee(name: String, email: String, pass: String, selectedServiceIds: List<String>) {
         if (name.isBlank() || email.isBlank() || pass.length < 6) {
             _statusMsg.value = "Preencha tudo corretamente. Senha min 6 caracteres."
             return
@@ -31,9 +45,21 @@ class TeamViewModel : ViewModel() {
 
         viewModelScope.launch {
             val success = repo.createEmployeeAccount(name, email, pass)
+
             if (success) {
-                _statusMsg.value = "Funcionário criado! Passe a senha para ele."
-                loadTeam()
+                selectedServiceIds.forEach { serviceId ->
+                    val currentServices = establishmentRepo.getMyServices()
+                    val service = currentServices.find { it.id == serviceId }
+
+                    if (service != null) {
+                        val newEmployeeList = service.employeeIds.toMutableList()
+                        newEmployeeList.add(email)
+                        establishmentRepo.updateServiceEmployees(service.id, newEmployeeList)
+                    }
+                }
+
+                _statusMsg.value = "Funcionário criado e vinculado!"
+                loadTeam() // Recarrega a lista
             } else {
                 _statusMsg.value = "Erro ao criar funcionário."
             }

@@ -53,11 +53,11 @@ class BookingRepository {
         }
     }
 
-    suspend fun createAppointment(appointment: Appointment): Boolean {
+    suspend fun createAppointment(appointment: Appointment): Boolean { // <- RECEBE O AGENDAMENTO
         val user = auth.currentUser ?: return false
         return try {
             val ref = db.collection("appointments").document()
-            // Preenche ID e ID do Cliente logado
+            // Adiciona apenas ID e ClientID, mas o resto (Data, ProviderId) já veio pronto!
             val finalAppointment = appointment.copy(id = ref.id, clientId = user.uid)
             ref.set(finalAppointment).await()
             true
@@ -78,26 +78,32 @@ class BookingRepository {
             // Define o fim do novo agendamento
             val newEndTime = newStartTime + (durationMin * 60 * 1000)
 
-            // Busca agendamentos do funcionário (poderia filtrar pelo dia para otimizar, mas assim funciona)
+            // 1. CORREÇÃO: Buscamos TODOS os agendamentos (incluindo cancelados)
+            // Removemos o .whereNotEqualTo para o Firebase não pedir índice
             val snapshot = db.collection("appointments")
                 .whereEqualTo("employeeId", employeeId)
-                .whereNotEqualTo("status", "canceled") // Ignora cancelados
                 .get()
                 .await()
 
             val appointments = snapshot.toObjects(Appointment::class.java)
 
-            // Verifica colisão na memória
+            // 2. FILTRAGEM NA MEMÓRIA: O Kotlin faz o trabalho sujo
             appointments.any { existing ->
+                // Se estiver cancelado, IGNORA (finge que não existe)
+                if (existing.status == "canceled") return@any false
+
                 val existingStart = existing.date
                 val existingEnd = existingStart + (existing.durationMin * 60 * 1000)
 
-                // Lógica de intersecção de horários
+                // Lógica de intersecção de horários (Matemática pura)
                 (newStartTime < existingEnd && newEndTime > existingStart)
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            true // Bloqueia se der erro por segurança
+            // DICA DE OURO: Retorne FALSE no catch.
+            // Se der erro de internet, melhor deixar o cliente tentar agendar
+            // do que bloquear dizendo "Horário Indisponível".
+            false
         }
     }
 
@@ -105,35 +111,43 @@ class BookingRepository {
 
     suspend fun getProviderAppointments(): List<Appointment> {
         val uid = auth.currentUser?.uid ?: return emptyList()
-        
+
         return try {
             val userDoc = db.collection("users").document(uid).get().await()
             val role = userDoc.getString("role")
 
             val query = if (role == "FUNCIONARIO") {
+                // Busca agendamentos deste funcionário
                 db.collection("appointments").whereEqualTo("employeeId", uid)
             } else {
                 // Gestor vê tudo do estabelecimento
                 db.collection("appointments").whereEqualTo("providerId", uid)
             }
 
-            val snapshot = query.orderBy("date", Query.Direction.ASCENDING).get().await()
-            snapshot.toObjects(Appointment::class.java)
+            // CORREÇÃO: Removemos .orderBy("date") do Firestore para evitar erro de índice
+            val snapshot = query.get().await()
+
+            // MÁGICA: Ordenamos a lista aqui no Kotlin (do mais antigo para o mais novo)
+            snapshot.toObjects(Appointment::class.java).sortedBy { it.date }
+
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()
         }
     }
-    
+
     suspend fun getClientAppointments(): List<Appointment> {
         val uid = auth.currentUser?.uid ?: return emptyList()
         return try {
             val snapshot = db.collection("appointments")
                 .whereEqualTo("clientId", uid)
-                .orderBy("date", Query.Direction.DESCENDING)
+                // CORREÇÃO: Removemos .orderBy do Firestore
                 .get()
                 .await()
-            snapshot.toObjects(Appointment::class.java)
+
+            // MÁGICA: Ordenamos aqui (do mais recente para o mais antigo)
+            snapshot.toObjects(Appointment::class.java).sortedByDescending { it.date }
+
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()

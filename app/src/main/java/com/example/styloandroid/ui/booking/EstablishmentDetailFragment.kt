@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.styloandroid.R
 import com.example.styloandroid.data.auth.AppUser
+import com.example.styloandroid.data.model.Appointment
 import com.example.styloandroid.data.model.Service
 import com.example.styloandroid.databinding.FragmentEstablishmentDetailBinding
 import com.google.android.material.snackbar.Snackbar
@@ -110,18 +111,16 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
         val names = qualifiedEmployees.map { it.name }.toTypedArray()
 
-        AlertDialog.Builder(requireContext())
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Escolha o Profissional")
             .setItems(names) { _, which ->
-                val selectedEmployee = qualifiedEmployees[which] // Usa a lista filtrada
+                val selectedEmployee = qualifiedEmployees[which]
                 showDateTimePicker(service, selectedEmployee)
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
-    /**
-     * Passo 2 e 3: Data e Hora
-     */
+
     private fun showDateTimePicker(service: Service, employee: AppUser) {
         val calendar = Calendar.getInstance()
 
@@ -132,17 +131,38 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
             val timePicker = TimePickerDialog(requireContext(), { _, hour, minute ->
 
-                // VALIDAÇÃO BÁSICA DE HORÁRIO COMERCIAL
+                // Validação de horário comercial
                 if (hour < 9 || hour >= 18) {
-                    Snackbar.make(requireView(), "Este estabelecimento só funciona das 09h às 18h.", Snackbar.LENGTH_LONG).show()
+                    com.google.android.material.snackbar.Snackbar.make(requireView(), "Atendimento apenas das 09h às 18h.", com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show()
                     return@TimePickerDialog
                 }
+
                 calendar.set(Calendar.HOUR_OF_DAY, hour)
                 calendar.set(Calendar.MINUTE, minute)
                 calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
 
-                // Passo 4: Confirmar
-                confirmBooking(service, employee, calendar.timeInMillis)
+                val selectedTime = calendar.timeInMillis
+
+                // 👇 CRIAÇÃO DO AGENDAMENTO CORRIGIDA 👇
+                val appointment = Appointment(
+                    serviceId = service.id,
+                    serviceName = service.name,
+                    price = service.price,
+                    durationMin = service.durationMin,
+                    date = selectedTime,
+                    status = "pending",
+
+                    // CORREÇÃO AQUI: Usamos a variável 'providerId' do Fragmento, não do serviço
+                    providerId = this.providerId,
+
+                    // Dados do funcionário selecionado
+                    employeeId = employee.uid,
+                    employeeName = employee.name
+                )
+
+                // Chama o ViewModel
+                vm.createAppointment(appointment)
 
             }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true)
 
@@ -152,14 +172,12 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
 
         datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
-        datePicker.setTitle("Data para ${service.name}")
         datePicker.show()
     }
 
-    private fun confirmBooking(service: Service, employee: AppUser, timestamp: Long) {
-        b.progressBar.isVisible = true
-        vm.scheduleService(providerId, businessName, service, employee, timestamp)
-    }
+
 
     override fun onDestroyView() { super.onDestroyView(); _b = null }
 }
+
+

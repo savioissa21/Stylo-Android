@@ -6,14 +6,16 @@ data class Appointment(
     // Cliente
     val clientId: String = "",
     val clientName: String = "",
-    
+
     // Estabelecimento (Dono/Gestor)
-    val providerId: String = "",      
-    val businessName: String = "",    
+    val providerId: String = "",
+    val businessName: String = "",
     
     // Profissional que executará o serviço (Pode ser o Dono ou um Funcionário)
     val employeeId: String = "",      
-    val employeeName: String = "",    
+    val employeeName: String = "",
+
+
 
     // Serviço
     val serviceId: String = "",

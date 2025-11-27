@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isVisible
@@ -24,6 +25,7 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
     private val vm: TeamViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        vm.loadServicesForDialog()
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentTeamManagementBinding.bind(view)
 
@@ -79,6 +81,18 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
         val etEmail = dialogView.findViewById<TextInputEditText>(R.id.etEmpEmail)
         val etPass = dialogView.findViewById<TextInputEditText>(R.id.etEmpPassword)
 
+        // Container onde vamos colocar os checkboxes
+        val containerServices = dialogView.findViewById<LinearLayout>(R.id.containerServicesDialog)
+        val availableServices = vm.servicesList.value ?: emptyList()
+
+        // Cria um CheckBox para cada serviço dinamicamente
+        availableServices.forEach { service ->
+            val cb = android.widget.CheckBox(requireContext())
+            cb.text = service.name
+            cb.tag = service.id // Guardamos o ID no tag
+            containerServices.addView(cb)
+        }
+
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .create()
@@ -87,7 +101,19 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
             val name = etName.text.toString()
             val email = etEmail.text.toString()
             val pass = etPass.text.toString()
-            vm.createEmployee(name, email, pass)
+
+            // Coleta os IDs dos serviços marcados
+            val selectedIds = mutableListOf<String>()
+            val count = containerServices.childCount
+            for (i in 0 until count) {
+                val v = containerServices.getChildAt(i)
+                if (v is android.widget.CheckBox && v.isChecked) {
+                    selectedIds.add(v.tag.toString())
+                }
+            }
+
+            // Manda tudo para o ViewModel
+            vm.createEmployee(name, email, pass, selectedIds)
             dialog.dismiss()
         }
 
