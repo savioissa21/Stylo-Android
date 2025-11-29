@@ -7,14 +7,15 @@
     android:layout_height="wrap_content"
     android:background="@drawable/ic_launcher_background"
     android:backgroundTint="@android:color/white"
-    android:padding="24dp">
+    android:paddingBottom="24dp">
 
+    <!-- Header / Drag Handle -->
     <View
         android:id="@+id/dragHandle"
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:background="#E0E0E0"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -23,24 +24,27 @@
         android:id="@+id/tvSheetTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Confirmar Agendamento"
+        android:text="Agendar Serviço"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:layout_marginTop="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dragHandle"/>
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/dragHandle"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/tvServiceNameSheet"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Corte de Cabelo"
-        android:textSize="16sp"
+        tools:text="Corte de Cabelo - R$ 35,00"
+        android:textSize="14sp"
         android:textColor="#757575"
+        android:layout_marginStart="24dp"
         app:layout_constraintTop_toBottomOf="@id/tvSheetTitle"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <!-- Seção 1: Profissional -->
     <TextView
         android:id="@+id/lblProf"
         android:layout_width="wrap_content"
@@ -49,30 +53,41 @@
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:layout_marginTop="24dp"
+        android:layout_marginStart="24dp"
         app:layout_constraintTop_toBottomOf="@id/tvServiceNameSheet"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupEmployees"
+    <HorizontalScrollView
+        android:id="@+id/scrollChips"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        app:singleSelection="true"
-        app:layout_constraintTop_toBottomOf="@id/lblProf"/>
+        android:paddingHorizontal="24dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/lblProf">
 
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupEmployees"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true"/>
+    </HorizontalScrollView>
+
+    <!-- Seção 2: Data -->
     <TextView
-        android:id="@+id/lblTime"
+        android:id="@+id/lblDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Data e Hora"
+        android:text="Data"
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/chipGroupEmployees"
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/scrollChips"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <LinearLayout
-        android:id="@+id/btnPickTime"
+        android:id="@+id/btnPickDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -80,10 +95,11 @@
         android:background="@drawable/ic_launcher_background"
         android:backgroundTint="#F5F5F5"
         android:padding="12dp"
+        android:layout_marginHorizontal="24dp"
         android:layout_marginTop="8dp"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintTop_toBottomOf="@id/lblTime">
+        app:layout_constraintTop_toBottomOf="@id/lblDate">
 
         <ImageView
             android:layout_width="24dp"
@@ -92,33 +108,82 @@
             app:tint="#212121"/>
 
         <TextView
-            android:id="@+id/tvSelectedDate"
+            android:id="@+id/tvSelectedDateString"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Toque para escolher..."
+            android:text="Selecione o dia..."
             android:textColor="#212121"
             android:textSize="16sp"
             android:layout_marginStart="12dp"/>
-            
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ALTERAR"
-            android:textStyle="bold"
-            android:textColor="#2196F3"
-            android:textSize="12sp"/>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/arrow_down_float"
+            app:tint="#757575"/>
     </LinearLayout>
 
+    <!-- Seção 3: Horários Disponíveis -->
+    <TextView
+        android:id="@+id/lblTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Horários Disponíveis"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/btnPickDate"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ProgressBar
+        android:id="@+id/progressSlots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/lblTime"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvNoSlots"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nenhum horário disponível para esta data."
+        android:gravity="center"
+        android:textColor="#D32F2F"
+        android:visibility="gone"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/lblTime"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTimeSlots"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingHorizontal="20dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="4"
+        tools:listitem="@layout/item_time_slot"
+        tools:itemCount="8"
+        app:layout_constraintTop_toBottomOf="@id/lblTime"/>
+
+    <!-- Botão Final -->
     <Button
         android:id="@+id/btnConfirmBooking"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Agendar Agora"
-        android:layout_marginTop="32dp"
+        android:text="Confirmar Agendamento"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
         android:backgroundTint="@color/black"
         android:textColor="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/btnPickTime"
+        android:paddingVertical="12dp"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/rvTimeSlots"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Configurar Horários"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Card Horários -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Horário de Funcionamento"
+                    android:textStyle="bold"
+                    android:textColor="#212121"
+                    android:textSize="16sp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical">
+
+                    <!-- Abertura -->
+                    <LinearLayout
+                        android:id="@+id/btnOpenTime"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/ic_launcher_background"
+                        android:backgroundTint="#F5F5F5"
+                        android:padding="12dp"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Abre às"
+                            android:textSize="12sp"
+                            android:textColor="#757575"/>
+                        <TextView
+                            android:id="@+id/tvOpenTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="09:00"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#212121"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="até"
+                        android:layout_marginHorizontal="12dp"
+                        android:textColor="#9E9E9E"/>
+
+                    <!-- Fechamento -->
+                    <LinearLayout
+                        android:id="@+id/btnCloseTime"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/ic_launcher_background"
+                        android:backgroundTint="#F5F5F5"
+                        android:padding="12dp"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Fecha às"
+                            android:textSize="12sp"
+                            android:textColor="#757575"/>
+                        <TextView
+                            android:id="@+id/tvCloseTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="20:00"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#212121"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card Dias da Semana -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dias de Atendimento"
+                    android:textStyle="bold"
+                    android:textColor="#212121"
+                    android:textSize="16sp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selecione os dias que você abre:"
+                    android:textSize="12sp"
+                    android:textColor="#757575"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupDays"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <!-- Chips criados no código ou aqui -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipSeg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Seg"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ter"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipQua"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Qua"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipQui"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Qui"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipSex"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sex"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipSab"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sáb"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipDom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dom"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Filter"/>
+
+                </com.google.android.material.chip.ChipGroup>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <Button
+            android:id="@+id/btnSaveSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salvar Alterações"
+            android:layout_marginTop="32dp"
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            android:paddingVertical="12dp"/>
+
+    </LinearLayout>
+</ScrollView>

@@ -81,6 +81,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_teamManagement)
         }
 
+        b.cardSettings.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_settings)
+        }
         // Logout
         b.cardLogout.setOnClickListener {
             vm.logout()

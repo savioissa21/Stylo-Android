@@ -25,43 +25,36 @@ data class SocialLinks(
 
 /**
  * Modelo principal do Usuário.
- *
- * ROLES (Tipos de Usuário):
- * 1. "CLIENTE": Usuário comum que agenda serviços.
- * 2. "GESTOR": Dono do estabelecimento (antigo "profissional"). Tem acesso total.
- * 3. "FUNCIONARIO": Prestador que trabalha para um Gestor. Vê apenas sua agenda.
  */
 data class AppUser(
-    // --- Campos Comuns (Todos os usuários) ---
+    // --- Campos Comuns ---
     val uid: String = "",
     val name: String = "",
     val email: String = "",
-    
-    /**
-     * Define o tipo de acesso: "CLIENTE", "GESTOR" ou "FUNCIONARIO"
-     */
     val role: String = "",
-    
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    val photoUrl: String? = null, // Foto de perfil do usuário
+    val photoUrl: String? = null,
 
     // --- Campos Específicos do FUNCIONÁRIO ---
-    /**
-     * ID do Gestor/Estabelecimento ao qual este funcionário pertence.
-     * Se for GESTOR ou CLIENTE, este campo fica null.
-     */
     val establishmentId: String? = null,
 
     // --- Campos Específicos do GESTOR (Dono do Negócio) ---
     val businessName: String? = null,
     val cnpj: String? = null,
     val businessPhone: String? = null,
-    val areaOfWork: String? = null, // Ex: Barbearia, Salão de Beleza
-
+    val areaOfWork: String? = null,
     val socialLinks: SocialLinks? = null,
-    val paymentMethods: List<String>? = null, // ["pix", "credit_card", "cash"]
+    val paymentMethods: List<String>? = null,
     val businessAddress: BusinessAddress? = null,
+    val subscriptionStatus: String? = "trial",
 
-    val subscriptionStatus: String? = "trial" // trial, active, expired
+    // --- NOVO: CONFIGURAÇÕES DE HORÁRIO ---
+    // Formato "HH:mm". Default 09:00 as 20:00
+    val openTime: String? = "09:00",
+    val closeTime: String? = "20:00",
+
+    // Lista de dias que abre (Calendar.SUNDAY = 1, MONDAY = 2, etc.)
+    // Default: Seg(2) a Sab(7)
+    val workDays: List<Int>? = listOf(2,3,4,5,6,7)
 )

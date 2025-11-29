@@ -12,6 +12,17 @@ class BookingRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    // --- INFORMAÇÕES DO ESTABELECIMENTO (NOVO) ---
+    suspend fun getProviderInfo(providerId: String): AppUser? {
+        return try {
+            val doc = db.collection("users").document(providerId).get().await()
+            doc.toObject(AppUser::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     // --- SERVIÇOS E EQUIPE ---
 
     suspend fun getServicesForProvider(providerId: String): List<Service> {
@@ -41,7 +52,7 @@ class BookingRepository {
                 .whereEqualTo("role", "FUNCIONARIO")
                 .get()
                 .await()
-            
+
             team.addAll(employeesSnapshot.toObjects(AppUser::class.java))
             team
         } catch (e: Exception) {
@@ -49,13 +60,30 @@ class BookingRepository {
         }
     }
 
-    // --- AGENDAMENTOS (CRUD) ---
+    // --- LÓGICA DE AGENDAMENTO ---
+
+    suspend fun getAppointmentsForEmployeeOnDate(employeeId: String, startOfDay: Long, endOfDay: Long): List<Appointment> {
+        return try {
+            val snapshot = db.collection("appointments")
+                .whereEqualTo("employeeId", employeeId)
+                .whereGreaterThanOrEqualTo("date", startOfDay)
+                .whereLessThanOrEqualTo("date", endOfDay)
+                .get()
+                .await()
+
+            snapshot.toObjects(Appointment::class.java)
+                .filter { it.status != "canceled" }
+                .sortedBy { it.date }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
 
     suspend fun createAppointment(appointment: Appointment): Boolean {
         val user = auth.currentUser ?: return false
         return try {
             val ref = db.collection("appointments").document()
-            // Adiciona ID gerado e o ID do cliente logado
             val finalAppointment = appointment.copy(id = ref.id, clientId = user.uid, clientName = user.displayName ?: "Cliente")
             ref.set(finalAppointment).await()
             true
@@ -65,49 +93,17 @@ class BookingRepository {
         }
     }
 
-    // Verifica se o funcionário já está ocupado naquele horário
-    suspend fun isTimeSlotTaken(employeeId: String, newStartTime: Long, durationMin: Int): Boolean {
-        return try {
-            val newEndTime = newStartTime + (durationMin * 60 * 1000)
-
-            // Busca todos os agendamentos desse funcionário
-            val snapshot = db.collection("appointments")
-                .whereEqualTo("employeeId", employeeId)
-                .get()
-                .await()
-
-            val appointments = snapshot.toObjects(Appointment::class.java)
-
-            // Verifica colisão de horário em memória
-            appointments.any { existing ->
-                if (existing.status == "canceled") return@any false
-
-                val existingStart = existing.date
-                val existingEnd = existingStart + (existing.durationMin * 60 * 1000)
-
-                // Lógica de intersecção: (StartA < EndB) e (EndA > StartB)
-                (newStartTime < existingEnd && newEndTime > existingStart)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false 
-        }
-    }
-
-    // === A FUNÇÃO QUE FALTAVA ===
     suspend fun updateAppointmentStatus(appointmentId: String, newStatus: String): Boolean {
         return try {
             db.collection("appointments").document(appointmentId).update("status", newStatus).await()
             true
         } catch (e: Exception) { false }
     }
-    // ============================
 
-    // --- LISTAGEM PARA DASHBOARDS ---
+    // --- DASHBOARDS E LISTAS ---
 
     suspend fun getProviderAppointments(): List<Appointment> {
         val uid = auth.currentUser?.uid ?: return emptyList()
-
         return try {
             val userDoc = db.collection("users").document(uid).get().await()
             val role = userDoc.getString("role")
@@ -138,7 +134,7 @@ class BookingRepository {
         }
     }
 
-    // --- AVALIAÇÕES (REVIEWS) ---
+    // --- REVIEWS ---
 
     suspend fun submitReview(review: Review): Boolean {
         return try {
@@ -162,7 +158,7 @@ class BookingRepository {
                 .whereEqualTo("providerId", providerId)
                 .get()
                 .await()
-            
+
             val reviews = snapshot.toObjects(Review::class.java)
             if (reviews.isEmpty()) return Pair(5.0, 0)
 
@@ -173,6 +169,4 @@ class BookingRepository {
             Pair(5.0, 0)
         }
     }
-
-    fun getCurrentUserName(): String? = auth.currentUser?.displayName
 }

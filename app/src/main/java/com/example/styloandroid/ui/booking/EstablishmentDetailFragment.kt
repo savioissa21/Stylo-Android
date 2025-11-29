@@ -1,7 +1,6 @@
 package com.example.styloandroid.ui.booking
 
 import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -9,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.styloandroid.R
 import com.example.styloandroid.data.auth.AppUser
@@ -37,7 +37,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentEstablishmentDetailBinding.bind(view)
 
-        // Recebe dados da navegação anterior
         arguments?.let {
             providerId = it.getString("providerId") ?: ""
             businessName = it.getString("businessName") ?: "Estabelecimento"
@@ -48,7 +47,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         setupRecyclerView()
         setupObservers()
 
-        // Carrega dados iniciais
         if (providerId.isNotEmpty()) {
             b.progressBar.isVisible = true
             vm.loadServices(providerId)
@@ -83,50 +81,106 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             if (msg != null) {
                 Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show()
                 if (msg.contains("sucesso", true)) {
-                    // Volta para a tela anterior após sucesso
                     findNavController().popBackStack()
                 }
             }
         }
     }
 
-    // --- BOTTOM SHEET (Onde os IDs são usados) ---
+    // --- LÓGICA DO BOTTOM SHEET (COM DIAS E HORÁRIOS DINÂMICOS) ---
     private fun openBookingSheet(service: Service) {
-        // Infla o layout que criamos no Passo 1
-        val view = layoutInflater.inflate(R.layout.bottom_sheet_booking, null)
-        val sheet = BottomSheetDialog(requireContext())
-        sheet.setContentView(view)
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_booking, null)
+        val sheetDialog = BottomSheetDialog(requireContext())
+        sheetDialog.setContentView(sheetView)
 
-        // Agora os IDs vão funcionar porque o XML existe
-        val tvService = view.findViewById<android.widget.TextView>(R.id.tvServiceNameSheet)
-        val chipGroup = view.findViewById<ChipGroup>(R.id.chipGroupEmployees)
-        val btnDate = view.findViewById<View>(R.id.btnPickTime)
-        val tvDate = view.findViewById<android.widget.TextView>(R.id.tvSelectedDate)
-        val btnConfirm = view.findViewById<android.widget.Button>(R.id.btnConfirmBooking)
+        val tvService = sheetView.findViewById<android.widget.TextView>(R.id.tvServiceNameSheet)
+        val chipGroup = sheetView.findViewById<ChipGroup>(R.id.chipGroupEmployees)
+        val btnDate = sheetView.findViewById<View>(R.id.btnPickDate)
+        val tvDateString = sheetView.findViewById<android.widget.TextView>(R.id.tvSelectedDateString)
+        val rvSlots = sheetView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvTimeSlots)
+        val progressSlots = sheetView.findViewById<View>(R.id.progressSlots)
+        val tvNoSlots = sheetView.findViewById<android.widget.TextView>(R.id.tvNoSlots)
+        val btnConfirm = sheetView.findViewById<android.widget.Button>(R.id.btnConfirmBooking)
 
         tvService.text = "${service.name} - R$ ${String.format("%.2f", service.price)}"
 
-        // 1. Configura Chips dos Funcionários
-        val qualifiedEmployees = teamList.filter { emp ->
-            service.employeeIds.isEmpty() || 
-            service.employeeIds.contains(emp.uid) || 
-            service.employeeIds.contains(emp.email)
+        var selectedEmployee: AppUser? = null
+        val selectedDateCal = Calendar.getInstance()
+        var selectedTimestamp: Long = 0L
+
+        // Garante que a data inicial seja válida. Se hoje for dia fechado, tenta achar o próximo dia aberto.
+        // (Lógica simplificada: se hoje estiver fechado, o usuário será forçado a trocar no picker)
+
+        val timeAdapter = TimeSlotAdapter { timestamp ->
+            selectedTimestamp = timestamp
+            btnConfirm.isEnabled = true
+            btnConfirm.alpha = 1.0f
+            btnConfirm.text = "Confirmar para " + SimpleDateFormat("HH:mm", Locale.getDefault()).format(timestamp)
+        }
+        rvSlots.layoutManager = GridLayoutManager(requireContext(), 4)
+        rvSlots.adapter = timeAdapter
+
+        fun refreshSlots() {
+            if (selectedEmployee == null) return
+
+            // Valida se o estabelecimento abre nesse dia da semana
+            if (!vm.isEstablishmentOpenOn(selectedDateCal)) {
+                tvNoSlots.text = "Fechado neste dia da semana."
+                tvNoSlots.isVisible = true
+                rvSlots.isVisible = false
+                btnConfirm.isEnabled = false
+                btnConfirm.alpha = 0.5f
+                return
+            } else {
+                tvNoSlots.text = "Nenhum horário disponível." // Texto padrão
+            }
+
+            selectedTimestamp = 0L
+            btnConfirm.isEnabled = false
+            btnConfirm.alpha = 0.5f
+            btnConfirm.text = "Selecione um horário"
+
+            vm.loadTimeSlots(selectedDateCal, service.durationMin, selectedEmployee!!.uid)
         }
 
-        var selectedEmployee: AppUser? = null
-        
+        vm.availableSlots.observe(viewLifecycleOwner) { slots ->
+            if (sheetDialog.isShowing) {
+                timeAdapter.submitList(slots)
+                tvNoSlots.isVisible = slots.isEmpty()
+                // Se estiver vazio e for dia aberto, mantém msg padrão. Se fechado, a validação acima já tratou.
+                rvSlots.isVisible = slots.isNotEmpty()
+            }
+        }
+
+        vm.isLoadingSlots.observe(viewLifecycleOwner) { loading ->
+            if (sheetDialog.isShowing) {
+                progressSlots.isVisible = loading
+                if(loading) {
+                    rvSlots.isVisible = false
+                    tvNoSlots.isVisible = false
+                }
+            }
+        }
+
+        // 1. Configura Funcionários
+        val qualifiedEmployees = teamList.filter { emp ->
+            service.employeeIds.isEmpty() ||
+                    service.employeeIds.contains(emp.uid) ||
+                    service.employeeIds.contains(emp.email)
+        }
+
         if (qualifiedEmployees.isEmpty()) {
             Toast.makeText(requireContext(), "Sem profissionais disponíveis.", Toast.LENGTH_SHORT).show()
-            return 
+            return
         }
 
         qualifiedEmployees.forEachIndexed { index, emp ->
             val chip = Chip(requireContext())
             chip.text = emp.name
             chip.isCheckable = true
-            chip.id = index 
+            chip.id = index
             chipGroup.addView(chip)
-            
+
             if (index == 0) {
                 chip.isChecked = true
                 selectedEmployee = emp
@@ -134,47 +188,45 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         }
 
         chipGroup.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId != -1) selectedEmployee = qualifiedEmployees[checkedId]
+            if (checkedId != -1) {
+                selectedEmployee = qualifiedEmployees[checkedId]
+                refreshSlots()
+            }
         }
 
-        // 2. Configura Data/Hora
-        var selectedTimestamp: Long = 0L
-        val calendar = Calendar.getInstance()
+        // 2. Configura Data
+        val sdfDate = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
+        tvDateString.text = sdfDate.format(selectedDateCal.time)
+
+        refreshSlots()
 
         btnDate.setOnClickListener {
-            DatePickerDialog(requireContext(), { _, year, month, day ->
-                calendar.set(year, month, day)
-                
-                TimePickerDialog(requireContext(), { _, hour, minute ->
-                    // Validação simples de horário comercial (9h as 18h)
-                    if (hour < 9 || hour >= 20) {
-                        Toast.makeText(requireContext(), "Horário fechado! Escolha entre 09:00 e 20:00", Toast.LENGTH_LONG).show()
-                        return@TimePickerDialog
-                    }
+            val datePicker = DatePickerDialog(
+                requireContext(),
+                { _, year, month, day ->
+                    val tempCal = Calendar.getInstance()
+                    tempCal.set(year, month, day)
 
-                    calendar.set(Calendar.HOUR_OF_DAY, hour)
-                    calendar.set(Calendar.MINUTE, minute)
-                    calendar.set(Calendar.SECOND, 0)
-                    
-                    selectedTimestamp = calendar.timeInMillis
-                    val sdf = SimpleDateFormat("dd/MM/yyyy 'às' HH:mm", Locale.getDefault())
-                    tvDate.text = sdf.format(calendar.time)
-                    
-                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
-                
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+                    // --- VALIDAÇÃO DE DIA ---
+                    if (!vm.isEstablishmentOpenOn(tempCal)) {
+                        Toast.makeText(requireContext(), "O estabelecimento não abre neste dia.", Toast.LENGTH_LONG).show()
+                        // Não atualiza o selectedDateCal, mantém o anterior
+                    } else {
+                        selectedDateCal.set(year, month, day)
+                        tvDateString.text = sdfDate.format(selectedDateCal.time)
+                        refreshSlots()
+                    }
+                },
+                selectedDateCal.get(Calendar.YEAR),
+                selectedDateCal.get(Calendar.MONTH),
+                selectedDateCal.get(Calendar.DAY_OF_MONTH)
+            )
+            datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
+            datePicker.show()
         }
 
-        // 3. Botão Confirmar
         btnConfirm.setOnClickListener {
-            if (selectedEmployee == null) {
-                Toast.makeText(requireContext(), "Selecione um profissional", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (selectedTimestamp == 0L) {
-                Toast.makeText(requireContext(), "Selecione data e hora", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            if (selectedEmployee == null || selectedTimestamp == 0L) return@setOnClickListener
 
             val appointment = Appointment(
                 serviceId = service.id,
@@ -187,12 +239,12 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 employeeId = selectedEmployee!!.uid,
                 employeeName = selectedEmployee!!.name
             )
-            
+
             vm.createAppointment(appointment)
-            sheet.dismiss()
+            sheetDialog.dismiss()
         }
 
-        sheet.show()
+        sheetDialog.show()
     }
 
     override fun onDestroyView() { super.onDestroyView(); _b = null }

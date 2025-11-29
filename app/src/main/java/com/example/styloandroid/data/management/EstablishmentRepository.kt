@@ -90,4 +90,29 @@ class EstablishmentRepository {
             emptyList()
         }
     }
+
+    suspend fun getMyProfile(): AppUser? {
+        val uid = auth.currentUser?.uid ?: return null
+        return try {
+            val doc = db.collection("users").document(uid).get().await()
+            doc.toObject(AppUser::class.java)
+        } catch (e: Exception) { null }
+    }
+
+    // Atualiza horários e dias
+    suspend fun updateEstablishmentSettings(openTime: String, closeTime: String, workDays: List<Int>): Boolean {
+        val uid = auth.currentUser?.uid ?: return false
+        val updates = mapOf(
+            "openTime" to openTime,
+            "closeTime" to closeTime,
+            "workDays" to workDays
+        )
+        return try {
+            db.collection("users").document(uid).update(updates).await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
 }
