@@ -22,78 +22,33 @@ class BookingViewModel : ViewModel() {
     private val _bookingStatus = MutableLiveData<String?>()
     val bookingStatus: LiveData<String?> = _bookingStatus
 
+    private val _ratingStats = MutableLiveData<Pair<Double, Int>>()
+    val ratingStats: LiveData<Pair<Double, Int>> = _ratingStats
+
     fun loadServices(providerId: String) {
-        viewModelScope.launch {
-            _services.value = repo.getServicesForProvider(providerId)
-        }
+        viewModelScope.launch { _services.value = repo.getServicesForProvider(providerId) }
     }
 
-    // Carrega quem trabalha no local
     fun loadTeam(providerId: String) {
-        viewModelScope.launch {
-            _team.value = repo.getTeamForEstablishment(providerId)
-        }
+        viewModelScope.launch { _team.value = repo.getTeamForEstablishment(providerId) }
     }
+
+    fun loadReviews(providerId: String) {
+        viewModelScope.launch { _ratingStats.value = repo.getReviewsStats(providerId) }
+    }
+
     fun createAppointment(appointment: Appointment) {
+        _bookingStatus.value = null
         viewModelScope.launch {
-            // 1. Verifica no Repositório se o horário está livre
-            // (Se você quiser fazer a validação dupla, senão pode salvar direto)
             val isTaken = repo.isTimeSlotTaken(appointment.employeeId, appointment.date, appointment.durationMin)
-
             if (isTaken) {
-                _bookingStatus.value = "Horário indisponível. Tente outro."
+                _bookingStatus.value = "⚠️ Horário indisponível! Tente outro."
                 return@launch
             }
-
-            // 2. Salva o agendamento
-            val success = repo.createAppointment(appointment)
-
-            if (success) {
-                _bookingStatus.value = "Agendamento confirmado! Aguarde a aprovação."
-            } else {
-                _bookingStatus.value = "Erro ao agendar. Verifique sua conexão."
-            }
-        }
-    }
-
-    fun scheduleService(
-        providerId: String,
-        businessName: String,
-        service: Service,
-        employee: AppUser, // Agora recebemos QUEM vai fazer
-        timestamp: Long
-    ) {
-        viewModelScope.launch {
-            _bookingStatus.value = null
-
-            // Verifica disponibilidade DO FUNCIONÁRIO
-            val isTaken = repo.isTimeSlotTaken(employee.uid, timestamp, service.durationMin)
-            
-            if (isTaken) {
-                _bookingStatus.value = "⚠️ Horário indisponível para ${employee.name}!"
-                return@launch
-            }
-
-            val appointment = Appointment(
-                providerId = providerId, // Dono do negócio
-                businessName = businessName,
-                
-                employeeId = employee.uid, // Quem executa
-                employeeName = employee.name,
-                
-                clientName = repo.getCurrentUserName() ?: "Cliente",
-                serviceId = service.id,
-                serviceName = service.name,
-                price = service.price,
-                durationMin = service.durationMin,
-                date = timestamp,
-                status = "pending"
-            )
-
             if (repo.createAppointment(appointment)) {
-                _bookingStatus.value = "Agendamento com ${employee.name} confirmado! 🎉"
+                _bookingStatus.value = "✅ Agendamento realizado com sucesso!"
             } else {
-                _bookingStatus.value = "Erro ao agendar. Tente novamente."
+                _bookingStatus.value = "❌ Erro ao agendar."
             }
         }
     }

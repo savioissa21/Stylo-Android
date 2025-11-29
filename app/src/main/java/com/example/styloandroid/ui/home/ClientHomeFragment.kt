@@ -1,9 +1,10 @@
 package com.example.styloandroid.ui.home
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -11,6 +12,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentClientHomeBinding
+// IMPORTANTE: Se HomeViewModel estiver em outro pacote, adicione o import aqui:
+// import com.example.styloandroid.viewmodel.home.HomeViewModel (exemplo)
 
 class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
 
@@ -23,18 +26,16 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentClientHomeBinding.bind(view)
 
-        setupRecyclerView()
+        setupUI()
         setupObservers()
-        setupListeners()
-
-        // Dispara o carregamento (caso o ViewModel não faça no init)
-        binding.progressBar.isVisible = true
+        setupSearchLogic()
+        
+        // Garante que busca os dados ao abrir
         homeViewModel.fetchProviders()
     }
 
-    private fun setupRecyclerView() {
+    private fun setupUI() {
         providerAdapter = ProviderAdapter(emptyList()) { provider ->
-            // Navegação para Detalhes
             val bundle = Bundle().apply {
                 putString("providerId", provider.id)
                 putString("businessName", provider.businessName)
@@ -46,43 +47,45 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = providerAdapter
         }
+
+        binding.btnMyAppointments.setOnClickListener {
+            findNavController().navigate(R.id.action_client_home_to_appointments)
+        }
+
+        binding.btnLogout.setOnClickListener {
+            homeViewModel.logout()
+            findNavController().navigate(R.id.action_client_home_to_login)
+        }
+    }
+
+    private fun setupSearchLogic() {
+        binding.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                homeViewModel.filterProviders(s.toString())
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
     }
 
     private fun setupObservers() {
-        // Nome do Cliente
         homeViewModel.userName.observe(viewLifecycleOwner) { name ->
             binding.tvWelcomeClient.text = "Bem-vindo(a), $name"
         }
 
-        // Lista de Prestadores
-        homeViewModel.providers.observe(viewLifecycleOwner) { providersList ->
-            binding.progressBar.isVisible = false // Esconde loading
+        homeViewModel.providers.observe(viewLifecycleOwner) { list ->
+            binding.progressBar.isVisible = false
+            Log.d("ClientHome", "Atualizando lista: ${list.size} itens")
 
-            Log.d("ClientHome", "Prestadores recebidos: ${providersList.size}")
-
-            if (providersList.isNullOrEmpty()) {
+            if (list.isEmpty()) {
                 binding.tvEmptyState.isVisible = true
                 binding.rvProviders.isVisible = false
             } else {
                 binding.tvEmptyState.isVisible = false
                 binding.rvProviders.isVisible = true
-                providerAdapter.updateList(providersList)
+                providerAdapter.updateList(list)
             }
         }
-    }
-
-    private fun setupListeners() {
-        // Busca
-        binding.tilSearch.setEndIconOnClickListener {
-            val query = binding.etSearch.text.toString()
-            Toast.makeText(requireContext(), "Filtro por: $query (A implementar)", Toast.LENGTH_SHORT).show()
-            // Dica: Aqui você chamaria homeViewModel.filterProviders(query)
-        }
-
-        // Perfil / Logout
-        binding.btnProfile.setOnClickListener {
-            homeViewModel.logout()
-            findNavController().navigate(R.id.action_client_home_to_appointments)        }
     }
 
     override fun onDestroyView() {

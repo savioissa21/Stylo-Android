@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.styloandroid.R
 import com.example.styloandroid.data.model.Appointment
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -37,7 +38,10 @@ class AgendaAdapter(
     override fun getItemCount() = list.size
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
+        // Agora pegamos os dois TextViews de data/hora
+        private val tvDate: TextView = itemView.findViewById(R.id.tvDate)       // Ex: 14:30
+        private val tvDateFull: TextView = itemView.findViewById(R.id.tvDateFull) // Ex: 25/11/2025
+        
         private val tvClient: TextView = itemView.findViewById(R.id.tvClientName)
         private val tvService: TextView = itemView.findViewById(R.id.tvService)
         private val tvPrice: TextView = itemView.findViewById(R.id.tvPrice)
@@ -46,31 +50,48 @@ class AgendaAdapter(
         private val btnFinish: Button = itemView.findViewById(R.id.btnFinish)
 
         fun bind(item: Appointment) {
-            // Formatar Data
-            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-            tvDate.text = sdf.format(Date(item.date))
+            val dateObj = Date(item.date)
 
-            tvClient.text = "Cliente: ${item.clientName}"
+            // 1. Formata a Hora (Grande)
+            val sdfTime = SimpleDateFormat("HH:mm", Locale.getDefault())
+            tvDate.text = sdfTime.format(dateObj)
+
+            // 2. Formata a Data (Pequena em baixo)
+            val sdfDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            tvDateFull.text = sdfDate.format(dateObj)
+
+            tvClient.text = item.clientName
             tvService.text = item.serviceName
-            tvPrice.text = "R$ ${String.format("%.2f", item.price)}"
+            
+            // Formatação de moeda correta
+            val formatPrice = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+            tvPrice.text = formatPrice.format(item.price)
 
             // Lógica Visual do Status
             when(item.status) {
                 "pending" -> {
                     tvStatus.text = "Pendente"
                     tvStatus.setTextColor(Color.parseColor("#FF9800")) // Laranja
+                    tvStatus.setBackgroundResource(R.drawable.ic_launcher_background) // Se quiser background, use um shape drawable ou null
+                    tvStatus.background?.setTint(Color.parseColor("#FFF3E0")) // Fundo laranja claro
+                    
                     btnConfirm.visibility = View.VISIBLE
                     btnFinish.visibility = View.GONE
                 }
                 "confirmed" -> {
                     tvStatus.text = "Confirmado"
                     tvStatus.setTextColor(Color.parseColor("#4CAF50")) // Verde
+                    tvStatus.setBackgroundResource(R.drawable.ic_launcher_background)
+                    tvStatus.background?.setTint(Color.parseColor("#E8F5E9")) // Fundo verde claro
+
                     btnConfirm.visibility = View.GONE
                     btnFinish.visibility = View.VISIBLE
                 }
                 "finished" -> {
                     tvStatus.text = "Concluído"
                     tvStatus.setTextColor(Color.GRAY)
+                    tvStatus.background = null // Sem fundo
+                    
                     btnConfirm.visibility = View.GONE
                     btnFinish.visibility = View.GONE
                 }
