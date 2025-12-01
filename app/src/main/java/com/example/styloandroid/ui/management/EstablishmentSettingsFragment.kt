@@ -5,8 +5,13 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentEstablishmentSettingsBinding
 import java.util.Calendar
@@ -18,16 +23,36 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
     private val binding get() = _binding!!
     private val vm: EstablishmentSettingsViewModel by viewModels()
 
+    // Lançador para abrir a galeria (Novo padrão Android)
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            vm.updateProfileImage(uri)
+        } else {
+            Toast.makeText(requireContext(), "Nenhuma imagem selecionada", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentEstablishmentSettingsBinding.bind(view)
 
         setupTimePickers()
         setupSaveButton()
+        setupImagePicker() // Novo
 
         vm.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                // Preenche dados existentes
+                // Carrega a imagem com Coil
+                if (!user.photoUrl.isNullOrEmpty()) {
+                    binding.ivProfile.load(user.photoUrl) {
+                        crossfade(true)
+                        transformations(CircleCropTransformation())
+                        placeholder(R.drawable.ic_launcher_background)
+                        error(R.drawable.ic_launcher_background)
+                    }
+                }
+
+                // Preenche horários (código existente)
                 binding.tvOpenTime.text = user.openTime ?: "09:00"
                 binding.tvCloseTime.text = user.closeTime ?: "20:00"
 
@@ -42,6 +67,12 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
             }
         }
 
+        // Loading da imagem
+        vm.isLoading.observe(viewLifecycleOwner) { loading ->
+            binding.progressPhoto.isVisible = loading
+            binding.btnChangePhoto.isEnabled = !loading
+        }
+
         vm.statusMsg.observe(viewLifecycleOwner) { msg ->
             if (msg != null) {
                 Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
@@ -50,6 +81,13 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
         }
 
         vm.loadCurrentSettings()
+    }
+
+    private fun setupImagePicker() {
+        binding.btnChangePhoto.setOnClickListener {
+            // Abre o seletor de fotos (apenas imagens)
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
     }
 
     private fun setupTimePickers() {

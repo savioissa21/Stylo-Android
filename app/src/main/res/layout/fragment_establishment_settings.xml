@@ -14,13 +14,44 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Configurar Horários"
+            android:text="Configurar Perfil"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="#212121"
             android:layout_marginBottom="24dp"/>
 
-        <!-- Card Horários -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivProfile"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_launcher_background"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                android:background="#E0E0E0"
+                android:padding="2dp"/>
+
+            <Button
+                android:id="@+id/btnChangePhoto"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alterar Foto"
+                android:layout_marginTop="8dp"/>
+
+            <ProgressBar
+                android:id="@+id/progressPhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+        </LinearLayout>
+
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -49,7 +80,6 @@
                     android:layout_marginTop="16dp"
                     android:gravity="center_vertical">
 
-                    <!-- Abertura -->
                     <LinearLayout
                         android:id="@+id/btnOpenTime"
                         android:layout_width="0dp"
@@ -83,7 +113,6 @@
                         android:layout_marginHorizontal="12dp"
                         android:textColor="#9E9E9E"/>
 
-                    <!-- Fechamento -->
                     <LinearLayout
                         android:id="@+id/btnCloseTime"
                         android:layout_width="0dp"
@@ -113,7 +142,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card Dias da Semana -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -149,7 +177,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <!-- Chips criados no código ou aqui -->
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipSeg"
                         android:layout_width="wrap_content"

@@ -65,6 +65,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 // *** Necessário pro 'by viewModels()' ***
     implementation("androidx.fragment:fragment-ktx:1.8.5")
-
+    implementation(libs.firebase.storage)
     implementation("io.coil-kt:coil:2.6.0")
 }

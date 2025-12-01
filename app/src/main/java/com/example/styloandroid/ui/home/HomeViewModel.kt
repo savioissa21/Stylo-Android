@@ -70,7 +70,8 @@ class HomeViewModel : ViewModel() {
                     businessName = user.businessName ?: user.name ?: "Sem Nome",
                     areaOfWork = user.areaOfWork ?: "Geral",
                     rating = 5.0, // Futuro: Implementar média real
-                    reviewCount = 0
+                    reviewCount = 0,
+                    profileImageUrl = user.photoUrl
                 )
             }
             

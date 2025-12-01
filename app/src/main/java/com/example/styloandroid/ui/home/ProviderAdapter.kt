@@ -4,8 +4,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView // Import
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import coil.load // Import do Coil
+import coil.transform.CircleCropTransformation // Opcional, se quiser redonda
 import com.example.styloandroid.R
 import com.example.styloandroid.data.ProviderCardData
 
@@ -36,12 +39,28 @@ class ProviderAdapter(
         private val tvName: TextView = itemView.findViewById(R.id.tvBusinessName)
         private val tvCategory: TextView = itemView.findViewById(R.id.tvCategory)
         private val tvRating: TextView = itemView.findViewById(R.id.tvRating)
+        private val ivImage: ImageView = itemView.findViewById(R.id.ivProviderImage) // Pega a ImageView
         private val btnBook: Button = itemView.findViewById(R.id.btnBookNow)
 
         fun bind(provider: ProviderCardData) {
             tvName.text = provider.businessName
             tvCategory.text = provider.areaOfWork
             tvRating.text = provider.rating.toString()
+
+            // Carrega a imagem se existir
+            if (provider.profileImageUrl != null) {
+                ivImage.load(provider.profileImageUrl) {
+                    crossfade(true)
+                    // Se quiser cortar redonda, descomente a linha abaixo.
+                    // Como no seu XML ela é "centerCrop" e quadrada (banner), talvez não precise.
+                    // transformations(CircleCropTransformation())
+                    placeholder(R.drawable.ic_launcher_background) // Imagem enquanto carrega
+                    error(R.drawable.ic_launcher_background) // Imagem se der erro
+                }
+            } else {
+                // Reseta para padrão se não tiver foto
+                ivImage.setImageResource(R.drawable.ic_launcher_background)
+            }
 
             // Clique tanto no card quanto no botão levam ao detalhe
             itemView.setOnClickListener { onClick(provider) }
