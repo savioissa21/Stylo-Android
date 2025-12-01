@@ -51,7 +51,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             b.progressBar.isVisible = true
             vm.loadServices(providerId)
             vm.loadTeam(providerId)
-            vm.loadReviews(providerId)
+            vm.loadReviews(providerId) // Chama o carregamento das reviews
         }
     }
 
@@ -77,6 +77,13 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
         vm.team.observe(viewLifecycleOwner) { teamList = it }
 
+        // --- OBSERVER NOVO PARA AVALIAÇÃO ---
+        vm.ratingStats.observe(viewLifecycleOwner) { (rating, count) ->
+            // Atualiza o texto da estrela
+            val formatted = String.format(Locale("pt", "BR"), "%.1f (%d avaliações)", rating, count)
+            b.tvRatingDetail.text = formatted
+        }
+
         vm.bookingStatus.observe(viewLifecycleOwner) { msg ->
             if (msg != null) {
                 Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show()
@@ -87,7 +94,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         }
     }
 
-    // --- LÓGICA DO BOTTOM SHEET (COM DIAS E HORÁRIOS DINÂMICOS) ---
+    // --- LÓGICA DO BOTTOM SHEET ---
     private fun openBookingSheet(service: Service) {
         val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_booking, null)
         val sheetDialog = BottomSheetDialog(requireContext())
@@ -108,9 +115,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         val selectedDateCal = Calendar.getInstance()
         var selectedTimestamp: Long = 0L
 
-        // Garante que a data inicial seja válida. Se hoje for dia fechado, tenta achar o próximo dia aberto.
-        // (Lógica simplificada: se hoje estiver fechado, o usuário será forçado a trocar no picker)
-
         val timeAdapter = TimeSlotAdapter { timestamp ->
             selectedTimestamp = timestamp
             btnConfirm.isEnabled = true
@@ -123,7 +127,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         fun refreshSlots() {
             if (selectedEmployee == null) return
 
-            // Valida se o estabelecimento abre nesse dia da semana
             if (!vm.isEstablishmentOpenOn(selectedDateCal)) {
                 tvNoSlots.text = "Fechado neste dia da semana."
                 tvNoSlots.isVisible = true
@@ -132,7 +135,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 btnConfirm.alpha = 0.5f
                 return
             } else {
-                tvNoSlots.text = "Nenhum horário disponível." // Texto padrão
+                tvNoSlots.text = "Nenhum horário disponível."
             }
 
             selectedTimestamp = 0L
@@ -147,7 +150,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             if (sheetDialog.isShowing) {
                 timeAdapter.submitList(slots)
                 tvNoSlots.isVisible = slots.isEmpty()
-                // Se estiver vazio e for dia aberto, mantém msg padrão. Se fechado, a validação acima já tratou.
                 rvSlots.isVisible = slots.isNotEmpty()
             }
         }
@@ -162,7 +164,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             }
         }
 
-        // 1. Configura Funcionários
         val qualifiedEmployees = teamList.filter { emp ->
             service.employeeIds.isEmpty() ||
                     service.employeeIds.contains(emp.uid) ||
@@ -194,7 +195,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             }
         }
 
-        // 2. Configura Data
         val sdfDate = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
         tvDateString.text = sdfDate.format(selectedDateCal.time)
 
@@ -207,10 +207,8 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                     val tempCal = Calendar.getInstance()
                     tempCal.set(year, month, day)
 
-                    // --- VALIDAÇÃO DE DIA ---
                     if (!vm.isEstablishmentOpenOn(tempCal)) {
                         Toast.makeText(requireContext(), "O estabelecimento não abre neste dia.", Toast.LENGTH_LONG).show()
-                        // Não atualiza o selectedDateCal, mantém o anterior
                     } else {
                         selectedDateCal.set(year, month, day)
                         tvDateString.text = sdfDate.format(selectedDateCal.time)
