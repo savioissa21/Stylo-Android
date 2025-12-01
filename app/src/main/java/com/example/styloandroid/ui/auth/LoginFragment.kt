@@ -21,37 +21,47 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentLoginBinding.bind(view)
 
+        // Botão Entrar
         b.btnLogin.setOnClickListener {
-            vm.login(
-                b.etEmail.text?.toString().orEmpty(),
-                b.etPassword.text?.toString().orEmpty()
-            )
+            val email = b.etEmail.text?.toString().orEmpty()
+            val pass = b.etPassword.text?.toString().orEmpty()
+
+            if(email.isNotBlank() && pass.isNotBlank()){
+                vm.login(email, pass)
+            } else {
+                Toast.makeText(requireContext(), "Preencha e-mail e senha", Toast.LENGTH_SHORT).show()
+            }
         }
 
+        // Botão ir para Registro
         b.btnGoRegister.setOnClickListener {
             findNavController().navigate(R.id.action_login_to_register)
         }
 
+        // Observa o estado da autenticação
         vm.state.observe(viewLifecycleOwner) { res: AuthState ->
             when (res) {
-                is AuthState.Loading -> b.btnLogin.isEnabled = false
+                is AuthState.Loading -> {
+                    b.btnLogin.isEnabled = false
+                    b.btnLogin.text = "Entrando..."
+                }
                 is AuthState.Success -> {
                     b.btnLogin.isEnabled = true
-                    // Roteamento baseado nos novos ROLES
+                    b.btnLogin.text = "Entrar"
+
                     when (res.role) {
                         "GESTOR" -> findNavController().navigate(R.id.action_login_to_home)
-                        "FUNCIONARIO" -> findNavController().navigate(R.id.providerAgendaFragment) // Cria rota direta se precisar
+                        "FUNCIONARIO" -> findNavController().navigate(R.id.providerAgendaFragment)
                         "CLIENTE" -> findNavController().navigate(R.id.action_login_to_client_home)
-                        
-                        // Fallback para versões antigas do app
+                        // Fallbacks para compatibilidade
                         "profissional" -> findNavController().navigate(R.id.action_login_to_home)
                         "cliente" -> findNavController().navigate(R.id.action_login_to_client_home)
-                        
                         else -> Toast.makeText(requireContext(), "Tipo de usuário desconhecido.", Toast.LENGTH_SHORT).show()
                     }
                 }
                 is AuthState.Error -> {
                     b.btnLogin.isEnabled = true
+                    b.btnLogin.text = "Entrar"
                     Toast.makeText(requireContext(), res.message, Toast.LENGTH_SHORT).show()
                 }
             }

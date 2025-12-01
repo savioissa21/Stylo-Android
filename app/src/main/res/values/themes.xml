@@ -1,8 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.StyloAndroid" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/blue_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorPrimaryContainer">@color/blue_light</item>
+        <item name="colorOnPrimaryContainer">@color/blue_dark</item>
+
+        <item name="colorSecondary">@color/blue_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <item name="android:colorBackground">@color/blue_bg_light</item>
+        <item name="colorSurface">@color/white</item>
+
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
     </style>
 
     <style name="Theme.StyloAndroid" parent="Base.Theme.StyloAndroid" />
