@@ -135,4 +135,19 @@ class EstablishmentRepository {
             team
         } catch (e: Exception) { emptyList() }
     }
+
+    suspend fun updateService(service: Service): Boolean {
+        val uid = auth.currentUser?.uid ?: return false
+        return try {
+            // .set() com o mesmo ID sobrescreve (atualiza) os dados
+            db.collection("users").document(uid)
+                .collection("services").document(service.id)
+                .set(service)
+                .await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
 }

@@ -169,4 +169,17 @@ class BookingRepository {
             Pair(5.0, 0)
         }
     }
+
+    suspend fun cancelAppointment(appointmentId: String): Boolean {
+        return try {
+            // Atualiza apenas o campo 'status' para 'canceled'
+            db.collection("appointments").document(appointmentId)
+                .update("status", "canceled")
+                .await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
 }

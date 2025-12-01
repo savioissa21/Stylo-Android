@@ -16,7 +16,6 @@ import com.example.styloandroid.data.auth.AppUser
 import com.example.styloandroid.data.management.ServiceAdapter
 import com.example.styloandroid.data.model.Service
 import com.example.styloandroid.databinding.FragmentServicesBinding
-import com.google.android.material.textfield.TextInputEditText
 
 class ServicesFragment : Fragment(R.layout.fragment_services) {
 
@@ -30,81 +29,112 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         _b = FragmentServicesBinding.bind(view)
 
         val adapter = ServiceAdapter(
+            onEditClick = { service ->
+                // Clique no card abre edição (reusando o dialog)
+                showServiceDialog(service)
+            },
             onDeleteClick = { service ->
-                // Clique longo ou botão de delete
+                // Clique na lixeira confirma exclusão
                 AlertDialog.Builder(requireContext())
-                    .setTitle("Ação")
-                    .setItems(arrayOf("Gerenciar Equipe", "Excluir Serviço")) { _, which ->
-                        when(which) {
-                            0 -> showLinkTeamDialog(service)
-                            1 -> vm.deleteService(service.id)
-                        }
-                    }.show()
+                    .setTitle("Excluir Serviço")
+                    .setMessage("Tem certeza que deseja excluir '${service.name}'?")
+                    .setPositiveButton("Excluir") { _, _ -> vm.deleteService(service.id) }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
             }
         )
-        // Vamos usar o clique normal do item para abrir a gestão de equipe também
-        // (Precisaria atualizar o adapter para aceitar um onItemClick, mas usaremos o deleteClick como 'Menu' por enquanto para simplificar, ou você pode alterar o Adapter)
 
         b.rvServices.layoutManager = LinearLayoutManager(requireContext())
         b.rvServices.adapter = adapter
 
-        b.fabAdd.setOnClickListener { showCreateServiceDialog() }
+        // Clique no FAB abre diálogo vazio (Criar)
+        b.fabAdd.setOnClickListener { showServiceDialog(null) }
 
         vm.services.observe(viewLifecycleOwner) { adapter.updateList(it) }
         vm.teamMembers.observe(viewLifecycleOwner) { currentTeamList = it }
         vm.operationStatus.observe(viewLifecycleOwner) { if(it!=null) Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
 
         vm.loadServices()
-        vm.loadTeamForSelection()
+        vm.loadTeamForSelection() // Carrega equipe para usar no dialog (opcional)
     }
 
-    // Dialog Simples: Cria Serviço
-    private fun showCreateServiceDialog() {
+    // Função unificada para Criar ou Editar
+    private fun showServiceDialog(serviceToEdit: Service?) {
+        val isEditing = serviceToEdit != null
+        val title = if (isEditing) "Editar Serviço" else "Novo Serviço"
+
         val layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(50, 40, 50, 10)
         }
-        val etName = android.widget.EditText(requireContext()).apply { hint = "Nome" }
-        val etPrice = android.widget.EditText(requireContext()).apply { hint = "Preço"; inputType = 8194 } // Decimal
-        val etDur = android.widget.EditText(requireContext()).apply { hint = "Minutos"; inputType = 2 } // Number
+
+        val etName = android.widget.EditText(requireContext()).apply {
+            hint = "Nome"
+            setText(serviceToEdit?.name ?: "")
+        }
+        val etPrice = android.widget.EditText(requireContext()).apply {
+            hint = "Preço (Ex: 35.00)"
+            inputType = 8194 // Decimal
+            setText(serviceToEdit?.price?.toString() ?: "")
+        }
+        val etDur = android.widget.EditText(requireContext()).apply {
+            hint = "Duração (minutos)"
+            inputType = 2 // Number
+            setText(serviceToEdit?.durationMin?.toString() ?: "")
+        }
 
         layout.addView(etName); layout.addView(etPrice); layout.addView(etDur)
 
+        // Adiciona botão extra para gerenciar equipe se estiver editando
+        if (isEditing) {
+            val btnTeam = android.widget.Button(requireContext()).apply {
+                text = "Gerenciar Equipe deste Serviço"
+                setOnClickListener { showLinkTeamDialog(serviceToEdit!!) }
+            }
+            layout.addView(btnTeam)
+        }
+
         AlertDialog.Builder(requireContext())
-            .setTitle("Novo Serviço")
+            .setTitle(title)
             .setView(layout)
             .setPositiveButton("Salvar") { _, _ ->
                 val name = etName.text.toString()
                 val price = etPrice.text.toString().toDoubleOrNull()
                 val dur = etDur.text.toString().toIntOrNull()
+
                 if (name.isNotEmpty() && price != null && dur != null) {
-                    // Cria inicialmente sem ninguém ou com o gestor (opcional)
-                    vm.addService(name, price, dur, emptyList())
+                    if (isEditing) {
+                        // Atualiza mantendo ID e lista de equipe existente
+                        val updated = serviceToEdit!!.copy(name = name, price = price, durationMin = dur)
+                        vm.updateService(updated)
+                    } else {
+                        // Cria novo
+                        vm.addService(name, price, dur, emptyList())
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Preencha valores válidos", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    // Dialog: Vincula Equipe (Abre depois de criar)
+    // ... Mantenha showLinkTeamDialog igual
     private fun showLinkTeamDialog(service: Service) {
+        // (Código existente do showLinkTeamDialog...)
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_service, null)
-        // Esconde campos de texto, deixa só a lista
         dialogView.findViewById<View>(R.id.etServiceName).visibility = View.GONE
         dialogView.findViewById<View>(R.id.etServicePrice).visibility = View.GONE
         dialogView.findViewById<View>(R.id.etServiceDuration).visibility = View.GONE
 
         val container = dialogView.findViewById<LinearLayout>(R.id.containerEmployees)
-
         currentTeamList.forEach { member ->
             val cb = CheckBox(requireContext())
             cb.text = member.name
-            cb.tag = member.uid.ifEmpty { member.email } // Usa email se uid for vazio (pendente)
-            // Marca se já estiver na lista do serviço
+            cb.tag = member.uid.ifEmpty { member.email }
             cb.isChecked = service.employeeIds.contains(cb.tag.toString())
             container.addView(cb)
         }
-
         AlertDialog.Builder(requireContext())
             .setTitle("Quem faz '${service.name}'?")
             .setView(dialogView)
@@ -117,4 +147,6 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
             }
             .show()
     }
+
+    override fun onDestroyView() { super.onDestroyView(); _b = null }
 }

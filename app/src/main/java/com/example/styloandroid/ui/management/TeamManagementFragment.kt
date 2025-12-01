@@ -29,7 +29,6 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentTeamManagementBinding.bind(view)
 
-        // Adapter simplificado para mostrar nomes (inline para agilizar)
         val adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             var items: List<AppUser> = emptyList()
 
@@ -37,12 +36,20 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
                 val v = LayoutInflater.from(p.context).inflate(android.R.layout.simple_list_item_2, p, false)
                 return object : RecyclerView.ViewHolder(v) {}
             }
+
             override fun onBindViewHolder(h: RecyclerView.ViewHolder, pos: Int) {
                 val user = items[pos]
                 val text1 = h.itemView.findViewById<TextView>(android.R.id.text1)
                 val text2 = h.itemView.findViewById<TextView>(android.R.id.text2)
+
                 text1.text = user.name
-                text2.text = user.email + " - " + (if(user.uid.isEmpty()) "Pendente" else "Ativo")
+                val status = if(user.uid.isEmpty()) "Pendente" else "Ativo"
+                text2.text = "${user.email} - $status"
+
+                // CLIQUE NO ITEM -> OPÇÕES
+                h.itemView.setOnClickListener {
+                    showEmployeeOptions(user)
+                }
             }
             override fun getItemCount() = items.size
         }
@@ -73,6 +80,56 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
         }
 
         vm.loadTeam()
+    }
+
+    private fun showEmployeeOptions(user: AppUser) {
+        val options = mutableListOf<String>()
+
+        // Se for pendente, permite editar nome. Se for ativo, apenas remover.
+        if (user.uid.isEmpty()) {
+            options.add("Editar Nome")
+        }
+        options.add("Remover da Equipe")
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Gerenciar: ${user.name}")
+            .setItems(options.toTypedArray()) { _, which ->
+                val selected = options[which]
+                when (selected) {
+                    "Remover da Equipe" -> {
+                        confirmRemoval(user)
+                    }
+                    "Editar Nome" -> {
+                        showEditNameDialog(user)
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun confirmRemoval(user: AppUser) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Remover Funcionário")
+            .setMessage("Tem certeza que deseja remover ${user.name}? Ele perderá o acesso aos dados da loja.")
+            .setPositiveButton("Sim, Remover") { _, _ ->
+                vm.removeEmployee(user)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun showEditNameDialog(user: AppUser) {
+        val input = android.widget.EditText(requireContext())
+        input.setText(user.name)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Editar Nome (Pendente)")
+            .setView(input)
+            .setPositiveButton("Salvar") { _, _ ->
+                vm.updatePendingName(user, input.text.toString())
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun showCreateEmployeeDialog() {

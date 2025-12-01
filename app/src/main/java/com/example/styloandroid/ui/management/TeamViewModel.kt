@@ -66,5 +66,30 @@ class TeamViewModel : ViewModel() {
         }
     }
 
+    fun removeEmployee(employee: AppUser) {
+        viewModelScope.launch {
+            val success = repo.removeEmployee(employee)
+            if (success) {
+                _statusMsg.value = "Funcionário removido da equipe."
+                loadTeam() // Atualiza lista
+            } else {
+                _statusMsg.value = "Erro ao remover funcionário."
+            }
+        }
+    }
+
+    fun updatePendingName(employee: AppUser, newName: String) {
+        if (employee.uid.isNotEmpty()) {
+            _statusMsg.value = "Não é possível editar nome de usuário registrado."
+            return
+        }
+        viewModelScope.launch {
+            if(repo.updatePendingEmployeeName(employee.email, newName)) {
+                _statusMsg.value = "Nome atualizado!"
+                loadTeam()
+            }
+        }
+    }
+
     fun clearStatus() { _statusMsg.value = null }
 }

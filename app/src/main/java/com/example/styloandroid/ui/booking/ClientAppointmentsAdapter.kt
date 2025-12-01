@@ -16,7 +16,8 @@ import java.util.Locale
 
 class ClientAppointmentsAdapter(
     private var list: List<Appointment> = emptyList(),
-    private val onRateClick: (Appointment) -> Unit = {} // Novo Callback
+    private val onRateClick: (Appointment) -> Unit = {},
+    private val onCancelClick: (Appointment) -> Unit = {} // NOVO CALLBACK
 ) : RecyclerView.Adapter<ClientAppointmentsAdapter.ViewHolder>() {
 
     fun updateList(newList: List<Appointment>) {
@@ -43,7 +44,9 @@ class ClientAppointmentsAdapter(
         private val tvService: TextView = itemView.findViewById(R.id.tvServiceName)
         private val tvTime: TextView = itemView.findViewById(R.id.tvTime)
         private val tvStatus: TextView = itemView.findViewById(R.id.tvStatusBadge)
-        private val btnRate: Button = itemView.findViewById(R.id.btnRate) // Novo
+
+        private val btnRate: Button = itemView.findViewById(R.id.btnRate)
+        private val btnCancel: Button = itemView.findViewById(R.id.btnCancel) // NOVO BOTÃO
 
         fun bind(item: Appointment) {
             val cal = Calendar.getInstance().apply { timeInMillis = item.date }
@@ -54,47 +57,55 @@ class ClientAppointmentsAdapter(
             tvTime.text = sdfTime.format(cal.time)
 
             tvBusiness.text = item.businessName
-            // Mostra o nome do profissional se disponível
-            val serviceText = if (item.employeeName.isNotEmpty()) 
-                "${item.serviceName} com ${item.employeeName}" 
-            else 
+            val serviceText = if (item.employeeName.isNotEmpty())
+                "${item.serviceName} com ${item.employeeName}"
+            else
                 item.serviceName
             tvService.text = serviceText
 
-            // Lógica de Cores
+            // === Lógica de Cores e Visibilidade ===
             when (item.status) {
                 "pending" -> {
                     tvStatus.text = "PENDENTE"
                     tvStatus.setTextColor(Color.parseColor("#EF6C00"))
                     tvStatus.setBackgroundColor(Color.parseColor("#FFF3E0"))
+
+                    // Pode cancelar se for pendente
+                    btnCancel.isVisible = true
+                    btnRate.isVisible = false
                 }
                 "confirmed" -> {
                     tvStatus.text = "CONFIRMADO"
                     tvStatus.setTextColor(Color.parseColor("#2E7D32"))
                     tvStatus.setBackgroundColor(Color.parseColor("#E8F5E9"))
+
+                    // Pode cancelar se for confirmado (mas no futuro)
+                    btnCancel.isVisible = true
+                    btnRate.isVisible = false
                 }
                 "finished" -> {
                     tvStatus.text = "CONCLUÍDO"
                     tvStatus.setTextColor(Color.GRAY)
                     tvStatus.setBackgroundColor(Color.parseColor("#F5F5F5"))
+
+                    btnCancel.isVisible = false
+                    // Avaliar se ainda não avaliou
+                    btnRate.isVisible = !item.hasReview
                 }
                 "canceled" -> {
                     tvStatus.text = "CANCELADO"
                     tvStatus.setTextColor(Color.RED)
                     tvStatus.setBackgroundColor(Color.parseColor("#FFEBEE"))
+
+                    btnCancel.isVisible = false
+                    btnRate.isVisible = false
                 }
             }
 
-            // Lógica do Botão Avaliar
-            // Só mostra se estiver CONCLUÍDO e AINDA NÃO TIVER avaliação
-            if (item.status == "finished" && !item.hasReview) {
-                btnRate.isVisible = true
-                btnRate.setOnClickListener {
-                    onRateClick(item)
-                }
-            } else {
-                btnRate.isVisible = false
-            }
+            // Click Listeners
+            btnRate.setOnClickListener { onRateClick(item) }
+
+            btnCancel.setOnClickListener { onCancelClick(item) }
         }
     }
 }

@@ -13,7 +13,8 @@ import java.util.Locale
 
 class ServiceAdapter(
     private var list: List<Service> = emptyList(),
-    private val onDeleteClick: (Service) -> Unit
+    private val onEditClick: (Service) -> Unit,   // Callback para Editar
+    private val onDeleteClick: (Service) -> Unit  // Callback para Deletar
 ) : RecyclerView.Adapter<ServiceAdapter.ViewHolder>() {
 
     fun updateList(newList: List<Service>) {
@@ -38,15 +39,18 @@ class ServiceAdapter(
 
         fun bind(item: Service) {
             tvName.text = item.name
-            
+
             val format = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
             tvPrice.text = format.format(item.price)
-            
             tvDuration.text = "• ${item.durationMin} min"
-            
+
             val count = item.employeeIds.size
             tvTeamCount.text = if (count == 0) "Nenhum profissional" else "$count profissional(is)"
-            
+
+            // Clique no CARD inteiro -> Editar
+            itemView.setOnClickListener { onEditClick(item) }
+
+            // Clique no botão Lixeira -> Deletar
             btnDelete.setOnClickListener { onDeleteClick(item) }
         }
     }

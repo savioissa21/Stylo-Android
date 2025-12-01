@@ -75,4 +75,16 @@ class ManagementViewModel : ViewModel() {
             }
         }
     }
+
+    fun updateService(service: Service) {
+        viewModelScope.launch {
+            val success = repo.updateService(service)
+            if (success) {
+                _operationStatus.value = "Serviço atualizado com sucesso!"
+                loadServices() // Recarrega a lista
+            } else {
+                _operationStatus.value = "Erro ao atualizar serviço."
+            }
+        }
+    }
 }

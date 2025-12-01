@@ -36,10 +36,15 @@ class ClientAppointmentsFragment : Fragment(R.layout.fragment_client_appointment
         progress = view.findViewById(R.id.progressBar)
         tvEmpty = view.findViewById(R.id.tvEmpty)
 
-        // Configura adapter com o listener de avaliação
-        adapter = ClientAppointmentsAdapter { appointment ->
-            showRateDialog(appointment)
-        }
+        // Configura adapter com os listeners de Avaliação E Cancelamento
+        adapter = ClientAppointmentsAdapter(
+            onRateClick = { appointment ->
+                showRateDialog(appointment)
+            },
+            onCancelClick = { appointment ->
+                showCancelConfirmation(appointment)
+            }
+        )
 
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
@@ -64,9 +69,37 @@ class ClientAppointmentsFragment : Fragment(R.layout.fragment_client_appointment
         }
     }
 
+    // --- NOVA FUNÇÃO DE CANCELAMENTO ---
+    private fun showCancelConfirmation(appointment: Appointment) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cancelar Agendamento")
+            .setMessage("Tem certeza que deseja cancelar o agendamento de ${appointment.serviceName}?")
+            .setNegativeButton("Não", null)
+            .setPositiveButton("Sim, Cancelar") { _, _ ->
+                performCancellation(appointment)
+            }
+            .show()
+    }
+
+    private fun performCancellation(appointment: Appointment) {
+        progress.isVisible = true
+        lifecycleScope.launch {
+            val success = repo.cancelAppointment(appointment.id)
+            progress.isVisible = false
+
+            if (success) {
+                Toast.makeText(requireContext(), "Agendamento cancelado.", Toast.LENGTH_SHORT).show()
+                loadData() // Recarrega a lista para atualizar o status visualmente
+            } else {
+                Toast.makeText(requireContext(), "Erro ao cancelar. Tente novamente.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // --- MANTENHA A LÓGICA DE AVALIAÇÃO ABAIXO IGUAL ---
     private fun showRateDialog(appointment: Appointment) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_rate_service, null)
-        
+
         val ratingBar = dialogView.findViewById<RatingBar>(R.id.ratingBar)
         val etComment = dialogView.findViewById<EditText>(R.id.etComment)
         val btnSubmit = dialogView.findViewById<Button>(R.id.btnSubmitReview)
@@ -105,7 +138,7 @@ class ClientAppointmentsFragment : Fragment(R.layout.fragment_client_appointment
             if (success) {
                 Toast.makeText(requireContext(), "Avaliação enviada! Obrigado. ⭐", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
-                loadData() // Recarrega a lista para sumir o botão de avaliar
+                loadData()
             } else {
                 Toast.makeText(requireContext(), "Erro ao enviar avaliação.", Toast.LENGTH_SHORT).show()
             }

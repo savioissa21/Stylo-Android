@@ -105,21 +105,39 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- NOVO BOTÃO: Avaliar -->
-        <Button
-            android:id="@+id/btnRate"
+        <LinearLayout
+            android:id="@+id/actionsLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Avaliar Atendimento"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:backgroundTint="#FFC107"
+            android:orientation="horizontal"
             android:layout_marginTop="12dp"
-            android:visibility="gone"
-            tools:visibility="visible"
+            android:gravity="end"
             app:layout_constraintTop_toBottomOf="@id/dateContainer"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <Button
+                android:id="@+id/btnCancel"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancelar"
+                android:textColor="#D32F2F"
+                android:visibility="gone"
+                tools:visibility="visible"/>
+
+            <Button
+                android:id="@+id/btnRate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Avaliar"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#FFC107"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
