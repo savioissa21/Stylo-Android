@@ -23,40 +23,50 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupObservers()
         setupClickListeners()
 
-        // Carrega os dados atualizados ao entrar na tela
         vm.loadDashboardData()
     }
 
     private fun setupObservers() {
-        // 1. Nome e Saudação
         vm.userName.observe(viewLifecycleOwner) { name ->
             b.tvGreeting.text = "Olá, $name"
         }
         vm.businessName.observe(viewLifecycleOwner) { business ->
-            b.tvBusinessName.text = business
+            b.tvBusinessName.text = business ?: "Stylo"
         }
-        
-        // 2. Métricas do Dia
+
+        // --- AQUI ESTÁ A MÁGICA PARA ARRUMAR O BOTÃO ---
+        vm.userRole.observe(viewLifecycleOwner) { role ->
+            val isManager = role == "GESTOR"
+
+            if (!isManager) {
+                b.tvBusinessName.text = "Painel do Profissional"
+
+                // Em vez de esconder (GONE), removemos da grade.
+                // Assim, o GridLayout puxa o próximo item (Sair) para a posição vaga (ao lado de Serviços).
+                b.gridMenu.removeView(b.cardTeam)
+                b.gridMenu.removeView(b.cardSettings)
+            }
+            // Se for Gestor, não fazemos nada, pois o XML já tem todos os itens.
+        }
+
         vm.todayCount.observe(viewLifecycleOwner) { count ->
             b.tvCountToday.text = count.toString()
         }
-        
+
         vm.todayRevenue.observe(viewLifecycleOwner) { value ->
             val format = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
             b.tvRevenueToday.text = format.format(value)
         }
 
-        // 3. Próximo Cliente
         vm.nextAppointment.observe(viewLifecycleOwner) { app ->
             if (app != null) {
                 val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
                 b.tvNextTime.text = sdf.format(app.date)
                 b.tvNextClient.text = app.clientName
                 b.tvNextService.text = app.serviceName
-                
-                // Habilita botão para ir direto pra agenda clicando no card
-                b.cardNextClient.setOnClickListener { 
-                    findNavController().navigate(R.id.action_home_to_agenda) 
+
+                b.cardNextClient.setOnClickListener {
+                    findNavController().navigate(R.id.action_home_to_agenda)
                 }
             } else {
                 b.tvNextTime.text = "--:--"
@@ -68,15 +78,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupClickListeners() {
-        // Card do Próximo Cliente (Botão ver agenda)
+        // (Mantém os listeners iguais, pois se o usuário clicar, vai funcionar.
+        // Se a view for removida, o clique não acontece, então é seguro.)
+
         b.btnViewAgenda.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_agenda)
         }
 
-        // Menu Grid (cardAgenda removido pois não existe mais no XML)
         b.cardServices.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_services)
         }
+
         b.cardTeam.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_teamManagement)
         }
@@ -84,7 +96,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         b.cardSettings.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_settings)
         }
-        // Logout
+
         b.cardLogout.setOnClickListener {
             vm.logout()
             findNavController().navigate(R.id.action_home_to_login)

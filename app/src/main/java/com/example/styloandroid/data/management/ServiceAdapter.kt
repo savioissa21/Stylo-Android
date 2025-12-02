@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.styloandroid.R
 import com.example.styloandroid.data.model.Service
@@ -13,12 +14,19 @@ import java.util.Locale
 
 class ServiceAdapter(
     private var list: List<Service> = emptyList(),
-    private val onEditClick: (Service) -> Unit,   // Callback para Editar
-    private val onDeleteClick: (Service) -> Unit  // Callback para Deletar
+    private var isReadOnly: Boolean = false, // NOVO PARÂMETRO
+    private val onEditClick: (Service) -> Unit,
+    private val onDeleteClick: (Service) -> Unit
 ) : RecyclerView.Adapter<ServiceAdapter.ViewHolder>() {
 
     fun updateList(newList: List<Service>) {
         list = newList
+        notifyDataSetChanged()
+    }
+
+    // Método para atualizar o modo de leitura
+    fun setReadOnly(readOnly: Boolean) {
+        this.isReadOnly = readOnly
         notifyDataSetChanged()
     }
 
@@ -47,11 +55,20 @@ class ServiceAdapter(
             val count = item.employeeIds.size
             tvTeamCount.text = if (count == 0) "Nenhum profissional" else "$count profissional(is)"
 
-            // Clique no CARD inteiro -> Editar
-            itemView.setOnClickListener { onEditClick(item) }
-
-            // Clique no botão Lixeira -> Deletar
-            btnDelete.setOnClickListener { onDeleteClick(item) }
+            // --- LÓGICA DE VISUALIZAÇÃO ---
+            if (isReadOnly) {
+                // Se for funcionário, esconde a lixeira e desabilita clique de edição
+                btnDelete.isVisible = false
+                itemView.isClickable = false
+                // Opcional: remover o background ripple para parecer estático
+                itemView.background = null
+            } else {
+                // Se for Gestor, tudo normal
+                btnDelete.isVisible = true
+                itemView.isClickable = true
+                itemView.setOnClickListener { onEditClick(item) }
+                btnDelete.setOnClickListener { onDeleteClick(item) }
+            }
         }
     }
 }

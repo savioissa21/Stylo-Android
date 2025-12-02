@@ -16,6 +16,9 @@ class ManagementViewModel : ViewModel() {
     private val _services = MutableLiveData<List<Service>>()
     val services: LiveData<List<Service>> = _services
 
+    private val _isReadOnly = MutableLiveData<Boolean>()
+    val isReadOnly: LiveData<Boolean> = _isReadOnly
+
     // Lista de membros da equipe para popular o checkbox
     private val _teamMembers = MutableLiveData<List<AppUser>>()
     val teamMembers: LiveData<List<AppUser>> = _teamMembers
@@ -25,65 +28,60 @@ class ManagementViewModel : ViewModel() {
 
     fun loadServices() {
         viewModelScope.launch {
-            _services.value = repo.getMyServices()
+            // 1. Pega os dados do usuário atual para saber quem ele é
+            val user = repo.getMyProfile()
+
+            if (user != null) {
+                if (user.role == "FUNCIONARIO" && !user.establishmentId.isNullOrEmpty()) {
+                    // É funcionário: Busca serviços do PATRÃO e bloqueia edição
+                    _isReadOnly.value = true
+                    _services.value = repo.getServices(user.establishmentId)
+                } else {
+                    // É Gestor: Busca serviços dele mesmo e libera edição
+                    _isReadOnly.value = false
+                    _services.value = repo.getServices(user.uid)
+                }
+            }
         }
     }
 
-    // Carrega a equipe para o Dialog
     fun loadTeamForSelection() {
-        viewModelScope.launch {
-            _teamMembers.value = repo.getMyTeamMembers()
-        }
+        viewModelScope.launch { _teamMembers.value = repo.getMyTeamMembers() }
     }
 
     fun addService(name: String, price: Double, duration: Int, selectedEmployees: List<String>) {
         viewModelScope.launch {
-            val newService = Service(
-                name = name, 
-                price = price, 
-                durationMin = duration,
-                employeeIds = selectedEmployees // Salva quem faz o serviço
-            )
-            
-            val success = repo.addService(newService)
-            if (success) {
-                _operationStatus.value = "Serviço adicionado com sucesso!"
-                loadServices() // Recarrega a lista
-            } else {
-                _operationStatus.value = "Erro ao adicionar serviço."
-            }
+            val newService = Service(name = name, price = price, durationMin = duration, employeeIds = selectedEmployees)
+            if (repo.addService(newService)) {
+                _operationStatus.value = "Serviço adicionado!"
+                loadServices()
+            } else { _operationStatus.value = "Erro." }
         }
     }
-    fun updateServiceTeam(serviceId: String, selectedEmployees: List<String>) {
-        viewModelScope.launch {
-            val success = repo.updateServiceEmployees(serviceId, selectedEmployees)
 
-            if (success) {
-                _operationStatus.value = "Equipe do serviço atualizada!"
-                loadServices() // Recarrega a lista para garantir
-            } else {
-                _operationStatus.value = "Erro ao atualizar equipe."
-            }
-        }
-    }
 
     fun deleteService(serviceId: String) {
         viewModelScope.launch {
             if(repo.deleteService(serviceId)) {
                 loadServices()
-                _operationStatus.value = "Serviço removido."
+                _operationStatus.value = "Removido."
             }
         }
     }
 
     fun updateService(service: Service) {
         viewModelScope.launch {
-            val success = repo.updateService(service)
-            if (success) {
-                _operationStatus.value = "Serviço atualizado com sucesso!"
-                loadServices() // Recarrega a lista
-            } else {
-                _operationStatus.value = "Erro ao atualizar serviço."
+            if (repo.updateService(service)) {
+                _operationStatus.value = "Atualizado!"
+                loadServices()
+            }
+        }
+    }
+    fun updateServiceTeam(serviceId: String, selectedEmployees: List<String>) {
+        viewModelScope.launch {
+            if (repo.updateServiceEmployees(serviceId, selectedEmployees)) {
+                _operationStatus.value = "Equipe atualizada!"
+                loadServices()
             }
         }
     }

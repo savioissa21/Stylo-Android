@@ -32,18 +32,10 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
 
             if (user != null) {
                 when (user.role) {
-                    "GESTOR" -> {
-                        // Dono vai para o Painel Completo
-                        navController.navigate(R.id.action_splash_to_home)
-                    }
-                    "FUNCIONARIO" -> {
-                        // Funcionário vai direto para a Agenda (Reusando fragmento de agenda)
-                        navController.navigate(R.id.providerAgendaFragment)
-                    }
-                    "CLIENTE" -> {
-                        // Cliente vai para busca
-                        navController.navigate(R.id.action_splash_to_client_home)
-                    }
+                    "GESTOR" -> navController.navigate(R.id.action_splash_to_home)
+                    // MUDANÇA AQUI: Funcionário agora vai para a Home (Dashboard)
+                    "FUNCIONARIO" -> navController.navigate(R.id.action_splash_to_home)
+                    "CLIENTE" -> navController.navigate(R.id.action_splash_to_client_home)
                     else -> navController.navigate(R.id.action_splash_to_login)
                 }
             } else {

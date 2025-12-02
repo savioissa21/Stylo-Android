@@ -8,6 +8,7 @@ import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.children
+import androidx.core.view.isVisible // Importante
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,19 +23,20 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
     private val vm: ManagementViewModel by viewModels()
     private var _b: FragmentServicesBinding? = null
     private val b get() = _b!!
+
+    // Adapter agora instanciado como variável de classe para podermos acessar depois
+    private lateinit var adapter: ServiceAdapter
+
     private var currentTeamList: List<AppUser> = emptyList()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentServicesBinding.bind(view)
 
-        val adapter = ServiceAdapter(
-            onEditClick = { service ->
-                // Clique no card abre edição (reusando o dialog)
-                showServiceDialog(service)
-            },
+        // Configura Adapter
+        adapter = ServiceAdapter(
+            onEditClick = { service -> showServiceDialog(service) },
             onDeleteClick = { service ->
-                // Clique na lixeira confirma exclusão
                 AlertDialog.Builder(requireContext())
                     .setTitle("Excluir Serviço")
                     .setMessage("Tem certeza que deseja excluir '${service.name}'?")
@@ -47,18 +49,38 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         b.rvServices.layoutManager = LinearLayoutManager(requireContext())
         b.rvServices.adapter = adapter
 
-        // Clique no FAB abre diálogo vazio (Criar)
+        // Clique no FAB (Criar)
         b.fabAdd.setOnClickListener { showServiceDialog(null) }
 
-        vm.services.observe(viewLifecycleOwner) { adapter.updateList(it) }
+        // --- OBSERVERS ---
+
+        // 1. Observa se é ReadOnly (Funcionário)
+        vm.isReadOnly.observe(viewLifecycleOwner) { readOnly ->
+            // Esconde o botão de Adicionar se for funcionário
+            b.fabAdd.isVisible = !readOnly
+
+            // Avisa o adapter para esconder as lixeiras
+            adapter.setReadOnly(readOnly)
+        }
+
+        // 2. Lista de Serviços
+        vm.services.observe(viewLifecycleOwner) {
+            adapter.updateList(it)
+            // Feedback visual se a lista estiver vazia (opcional)
+            if (it.isEmpty()) {
+                Toast.makeText(context, "Nenhum serviço encontrado.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         vm.teamMembers.observe(viewLifecycleOwner) { currentTeamList = it }
         vm.operationStatus.observe(viewLifecycleOwner) { if(it!=null) Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
 
+        // Carrega os dados
         vm.loadServices()
-        vm.loadTeamForSelection() // Carrega equipe para usar no dialog (opcional)
+        vm.loadTeamForSelection()
     }
 
-    // Função unificada para Criar ou Editar
+    // (Mantenha showServiceDialog e showLinkTeamDialog iguais ao que você já tem)
     private fun showServiceDialog(serviceToEdit: Service?) {
         val isEditing = serviceToEdit != null
         val title = if (isEditing) "Editar Serviço" else "Novo Serviço"
@@ -85,7 +107,6 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
 
         layout.addView(etName); layout.addView(etPrice); layout.addView(etDur)
 
-        // Adiciona botão extra para gerenciar equipe se estiver editando
         if (isEditing) {
             val btnTeam = android.widget.Button(requireContext()).apply {
                 text = "Gerenciar Equipe deste Serviço"
@@ -104,11 +125,9 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
 
                 if (name.isNotEmpty() && price != null && dur != null) {
                     if (isEditing) {
-                        // Atualiza mantendo ID e lista de equipe existente
                         val updated = serviceToEdit!!.copy(name = name, price = price, durationMin = dur)
                         vm.updateService(updated)
                     } else {
-                        // Cria novo
                         vm.addService(name, price, dur, emptyList())
                     }
                 } else {
@@ -119,9 +138,7 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
             .show()
     }
 
-    // ... Mantenha showLinkTeamDialog igual
     private fun showLinkTeamDialog(service: Service) {
-        // (Código existente do showLinkTeamDialog...)
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_service, null)
         dialogView.findViewById<View>(R.id.etServiceName).visibility = View.GONE
         dialogView.findViewById<View>(R.id.etServicePrice).visibility = View.GONE

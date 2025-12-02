@@ -18,7 +18,6 @@ import com.example.styloandroid.databinding.FragmentEstablishmentDetailBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -51,7 +50,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             b.progressBar.isVisible = true
             vm.loadServices(providerId)
             vm.loadTeam(providerId)
-            vm.loadReviews(providerId) // Chama o carregamento das reviews
+            vm.loadReviews(providerId)
         }
     }
 
@@ -77,16 +76,18 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
         vm.team.observe(viewLifecycleOwner) { teamList = it }
 
-        // --- OBSERVER NOVO PARA AVALIAÇÃO ---
         vm.ratingStats.observe(viewLifecycleOwner) { (rating, count) ->
-            // Atualiza o texto da estrela
             val formatted = String.format(Locale("pt", "BR"), "%.1f (%d avaliações)", rating, count)
             b.tvRatingDetail.text = formatted
         }
 
+        // --- MUDANÇA AQUI: Toast no lugar de Snackbar ---
         vm.bookingStatus.observe(viewLifecycleOwner) { msg ->
             if (msg != null) {
-                Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show()
+                // Exibe o Toast
+                Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
+
+                // Se deu certo, volta para a tela anterior
                 if (msg.contains("sucesso", true)) {
                     findNavController().popBackStack()
                 }
@@ -100,6 +101,8 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         val sheetDialog = BottomSheetDialog(requireContext())
         sheetDialog.setContentView(sheetView)
 
+        // IMPORTANTE: Como mudamos o XML para NestedScrollView,
+        // certifique-se de que os IDs abaixo batem com o novo XML corrigido.
         val tvService = sheetView.findViewById<android.widget.TextView>(R.id.tvServiceNameSheet)
         val chipGroup = sheetView.findViewById<ChipGroup>(R.id.chipGroupEmployees)
         val btnDate = sheetView.findViewById<View>(R.id.btnPickDate)
@@ -238,7 +241,10 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 employeeName = selectedEmployee!!.name
             )
 
+            // Inicia o agendamento
             vm.createAppointment(appointment)
+
+            // Fecha o modal imediatamente (o Toast aparecerá em seguida pelo observer)
             sheetDialog.dismiss()
         }
 

@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.styloandroid.data.ProviderCardData
 import com.example.styloandroid.data.auth.AuthRepository
-// Importação corrigida
 import com.example.styloandroid.data.auth.HomeRepository
 import com.example.styloandroid.data.booking.BookingRepository
 import com.example.styloandroid.data.model.Appointment
@@ -25,6 +24,10 @@ class HomeViewModel : ViewModel() {
 
     private val _businessName = MutableLiveData<String>()
     val businessName: LiveData<String> = _businessName
+
+    // NOVO: Cargo do usuário para controle de visibilidade na tela
+    private val _userRole = MutableLiveData<String>()
+    val userRole: LiveData<String> = _userRole
 
     // --- DASHBOARD (PROFISSIONAL) ---
     private val _todayCount = MutableLiveData<Int>()
@@ -53,29 +56,26 @@ class HomeViewModel : ViewModel() {
             val user = authRepo.getAppUser()
             _userName.value = user?.name ?: "Usuário"
             _businessName.value = user?.businessName ?: "Meu Negócio"
+            // Salva o role para a UI usar
+            _userRole.value = user?.role ?: ""
         }
     }
 
     // --- LÓGICA DO CLIENTE (BUSCA) ---
     fun fetchProviders() {
         viewModelScope.launch {
-            // 1. Busca todos os usuários GESTORES
             val appUsers = homeRepo.getProfessionalProviders()
             val cards = mutableListOf<ProviderCardData>()
 
-            // 2. Itera sobre cada prestador para buscar a média de avaliações REAL
-            // O erro de iterator sumiu pois appUsers agora é reconhecido corretamente como List<AppUser>
             for (user in appUsers) {
-                // Busca estatísticas reais no banco (Nota média, Total de avaliações)
                 val stats = bookingRepo.getReviewsStats(user.uid)
-
                 cards.add(
                     ProviderCardData(
                         id = user.uid,
                         businessName = user.businessName ?: user.name ?: "Sem Nome",
                         areaOfWork = user.areaOfWork ?: "Geral",
-                        rating = stats.first,       // <-- DADO REAL (Era 5.0)
-                        reviewCount = stats.second, // <-- DADO REAL (Era 0)
+                        rating = stats.first,
+                        reviewCount = stats.second,
                         profileImageUrl = user.photoUrl
                     )
                 )
@@ -102,6 +102,9 @@ class HomeViewModel : ViewModel() {
     fun loadDashboardData() {
         viewModelScope.launch {
             loadUserData()
+            // O repositório já filtra automaticamente:
+            // Se for GESTOR -> Pega tudo do estabelecimento
+            // Se for FUNCIONARIO -> Pega tudo onde employeeId == uid
             val allAppointments = bookingRepo.getProviderAppointments()
             calculateStats(allAppointments)
         }
@@ -118,6 +121,7 @@ class HomeViewModel : ViewModel() {
             val appDay = calendar.get(Calendar.DAY_OF_YEAR)
             val appYear = calendar.get(Calendar.YEAR)
 
+            // Inclui pendentes e confirmados (aceitos)
             appDay == currentDay && appYear == currentYear && app.status != "canceled"
         }
 
