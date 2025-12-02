@@ -12,8 +12,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentClientHomeBinding
-// IMPORTANTE: Se HomeViewModel estiver em outro pacote, adicione o import aqui:
-// import com.example.styloandroid.viewmodel.home.HomeViewModel (exemplo)
 
 class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
 
@@ -29,7 +27,7 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
         setupUI()
         setupObservers()
         setupSearchLogic()
-        
+
         // Garante que busca os dados ao abrir
         homeViewModel.fetchProviders()
     }
@@ -50,6 +48,11 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
 
         binding.btnMyAppointments.setOnClickListener {
             findNavController().navigate(R.id.action_client_home_to_appointments)
+        }
+
+        // Navegação para Perfil (NOVO)
+        binding.btnProfile.setOnClickListener {
+            findNavController().navigate(R.id.action_client_home_to_profile)
         }
 
         binding.btnLogout.setOnClickListener {

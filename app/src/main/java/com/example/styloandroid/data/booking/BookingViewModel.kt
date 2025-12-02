@@ -9,7 +9,9 @@ import com.example.styloandroid.data.booking.BookingRepository
 import com.example.styloandroid.data.model.Appointment
 import com.example.styloandroid.data.model.Service
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class BookingViewModel : ViewModel() {
     private val repo = BookingRepository()
@@ -32,13 +34,13 @@ class BookingViewModel : ViewModel() {
     private val _isLoadingSlots = MutableLiveData<Boolean>()
     val isLoadingSlots: LiveData<Boolean> = _isLoadingSlots
 
-    // Armazena info do estabelecimento (horários, dias)
-    private var providerInfo: AppUser? = null
+    // Armazena info global do estabelecimento (para fallback)
+    private var establishmentInfo: AppUser? = null
 
     fun loadServices(providerId: String) {
         viewModelScope.launch {
-            // Carrega info do provedor junto com serviços
-            providerInfo = repo.getProviderInfo(providerId)
+            // Carrega info do estabelecimento
+            establishmentInfo = repo.getProviderInfo(providerId)
             _services.value = repo.getServicesForProvider(providerId)
         }
     }
@@ -51,59 +53,88 @@ class BookingViewModel : ViewModel() {
         viewModelScope.launch { _ratingStats.value = repo.getReviewsStats(providerId) }
     }
 
-    // Helper para verificar se o dia está aberto
+    // Helper para verificar se o dia está aberto (apenas dia da semana)
+    // A verificação de data bloqueada específica acontece dentro do loadTimeSlots agora
     fun isEstablishmentOpenOn(date: Calendar): Boolean {
         val dayOfWeek = date.get(Calendar.DAY_OF_WEEK)
-        // Se providerInfo ainda não carregou, assume padrão (Seg-Sab)
-        val workDays = providerInfo?.workDays ?: listOf(2,3,4,5,6,7)
+        val workDays = establishmentInfo?.workDays ?: listOf(2,3,4,5,6,7)
         return workDays.contains(dayOfWeek)
     }
 
     /**
-     * GERAÇÃO DE HORÁRIOS DINÂMICA
+     * GERAÇÃO DE HORÁRIOS AVANÇADA
+     * Considera: Horário individual, Almoço, Folgas e Agendamentos existentes.
      */
     fun loadTimeSlots(date: Calendar, durationMin: Int, employeeId: String) {
         _isLoadingSlots.value = true
         viewModelScope.launch {
-            // 1. Configura Horário de Funcionamento Dinâmico
-            var startHour = 9
-            var startMin = 0
-            var endHour = 20
-            var endMin = 0
 
-            providerInfo?.let { info ->
-                // Parse "09:00" -> hour=9, min=0
-                info.openTime?.split(":")?.let {
-                    if(it.size == 2) {
-                        startHour = it[0].toIntOrNull() ?: 9
-                        startMin = it[1].toIntOrNull() ?: 0
-                    }
-                }
-                info.closeTime?.split(":")?.let {
-                    if(it.size == 2) {
-                        endHour = it[0].toIntOrNull() ?: 20
-                        endMin = it[1].toIntOrNull() ?: 0
-                    }
-                }
+            // 1. Busca configurações ESPECÍFICAS do profissional (seja funcionário ou dono)
+            // Se falhar, usa as configs globais do establishmentInfo
+            val employeeConfig = repo.getEmployeeConfig(employeeId) ?: establishmentInfo
+
+            if (employeeConfig == null) {
+                _availableSlots.value = emptyList()
+                _isLoadingSlots.value = false
+                return@launch
             }
 
-            // 2. Define o intervalo do dia para busca no banco
+            // 2. VERIFICA BLOQUEIOS DE DATA (Feriados/Folgas)
+            val sdfDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val dateString = sdfDate.format(date.time)
+
+            if (employeeConfig.blockedDates?.contains(dateString) == true) {
+                // Dia bloqueado para este funcionário
+                _availableSlots.value = emptyList()
+                _isLoadingSlots.value = false
+                return@launch
+            }
+
+            // 3. VERIFICA DIA DA SEMANA (Recurso existente, mas aplicado ao funcionário)
+            val dayOfWeek = date.get(Calendar.DAY_OF_WEEK)
+            val workDays = employeeConfig.workDays ?: listOf(2,3,4,5,6,7)
+            if (!workDays.contains(dayOfWeek)) {
+                _availableSlots.value = emptyList()
+                _isLoadingSlots.value = false
+                return@launch
+            }
+
+            // 4. CONFIGURA HORÁRIOS (Parse HH:mm para Minutos do dia)
+            val (startHour, startMin) = parseTime(employeeConfig.openTime ?: "09:00")
+            val (endHour, endMin) = parseTime(employeeConfig.closeTime ?: "20:00")
+
+            val startWorkMinutes = startHour * 60 + startMin
+            val endWorkMinutes = endHour * 60 + endMin
+
+            // Configura Almoço (se existir)
+            var startLunchMinutes = -1
+            var endLunchMinutes = -1
+            if (!employeeConfig.lunchStartTime.isNullOrEmpty() && !employeeConfig.lunchEndTime.isNullOrEmpty()) {
+                val (lh, lm) = parseTime(employeeConfig.lunchStartTime)
+                startLunchMinutes = lh * 60 + lm
+                val (leh, lem) = parseTime(employeeConfig.lunchEndTime)
+                endLunchMinutes = leh * 60 + lem
+            }
+
+            // 5. DEFINE INTERVALO DE BUSCA NO BANCO
             val startOfDay = date.clone() as Calendar
             startOfDay.set(Calendar.HOUR_OF_DAY, 0)
             startOfDay.set(Calendar.MINUTE, 0)
+            startOfDay.set(Calendar.SECOND, 0)
 
             val endOfDay = date.clone() as Calendar
             endOfDay.set(Calendar.HOUR_OF_DAY, 23)
             endOfDay.set(Calendar.MINUTE, 59)
+            endOfDay.set(Calendar.SECOND, 59)
 
-            // 3. Busca agendamentos existentes
+            // Busca agendamentos existentes no banco
             val existingAppointments = repo.getAppointmentsForEmployeeOnDate(employeeId, startOfDay.timeInMillis, endOfDay.timeInMillis)
 
-            // 4. Gera os Slots
+            // 6. GERAÇÃO DOS SLOTS
             val slots = mutableListOf<Long>()
             val slotCalendar = date.clone() as Calendar
 
-            // Configura horário inicial dinâmico
+            // Seta o calendário para o início do expediente
             slotCalendar.set(Calendar.HOUR_OF_DAY, startHour)
             slotCalendar.set(Calendar.MINUTE, startMin)
             slotCalendar.set(Calendar.SECOND, 0)
@@ -111,42 +142,58 @@ class BookingViewModel : ViewModel() {
 
             val now = System.currentTimeMillis()
 
-            // Converte horário de fechamento para minutos totais do dia para facilitar comparação
-            val closeTimeInMinutes = (endHour * 60) + endMin
+            // Loop minuto a minuto (saltando de 30 em 30 min, ou conforme duração)
+            // Aqui usamos um "step" fixo de 30min para grade de horários, ou a própria duração do serviço?
+            // Geralmente grades são fixas (ex: 9:00, 9:30, 10:00) independente se o serviço dura 20 ou 50 min.
+            // Vamos manter grade de 30 em 30 minutos para padronização.
+            val slotStepMinutes = 30
 
-            // Loop de geração
             while (true) {
                 val currentHour = slotCalendar.get(Calendar.HOUR_OF_DAY)
                 val currentMin = slotCalendar.get(Calendar.MINUTE)
-                val currentTimeInMinutes = (currentHour * 60) + currentMin
+                val currentMinutesOfDay = currentHour * 60 + currentMin
 
-                // Se o início do slot já passou do horário de fechar, para.
-                if (currentTimeInMinutes >= closeTimeInMinutes) break
+                // Se o slot começar DEPOIS ou IGUAL ao horário de saída, encerra.
+                // Obs: Consideramos que o serviço precisa caber ANTES de fechar.
+                if (currentMinutesOfDay >= endWorkMinutes) break
 
                 val slotStart = slotCalendar.timeInMillis
                 val slotEnd = slotStart + (durationMin * 60 * 1000)
 
-                // Verifica se o TÉRMINO do serviço passa do horário de fechar
+                // Verifica término do serviço
                 val endSlotCal = Calendar.getInstance().apply { timeInMillis = slotEnd }
-                val endSlotTimeInMinutes = (endSlotCal.get(Calendar.HOUR_OF_DAY) * 60) + endSlotCal.get(Calendar.MINUTE)
+                val endSlotMinutesOfDay = endSlotCal.get(Calendar.HOUR_OF_DAY) * 60 + endSlotCal.get(Calendar.MINUTE)
 
-                // Se terminar depois do fechamento (e for no mesmo dia), ignora
-                if (endSlotCal.get(Calendar.DAY_OF_YEAR) == slotCalendar.get(Calendar.DAY_OF_YEAR) &&
-                    endSlotTimeInMinutes > closeTimeInMinutes) {
-                    break
+                // Se virar o dia ou passar do horário de saída
+                if (endSlotCal.get(Calendar.DAY_OF_YEAR) != slotCalendar.get(Calendar.DAY_OF_YEAR) ||
+                    endSlotMinutesOfDay > endWorkMinutes) {
+                    break // Não cabe mais hoje
                 }
 
-                // Verifica se já passou (para hoje) + buffer 30min
+                // VALIDAÇÃO 1: Passado (com buffer de 30min)
                 if (slotStart < now + (30 * 60 * 1000)) {
-                    slotCalendar.add(Calendar.MINUTE, 30)
+                    slotCalendar.add(Calendar.MINUTE, slotStepMinutes)
                     continue
                 }
 
-                // Verifica colisão
+                // VALIDAÇÃO 2: Almoço
+                // Verifica se o slot INTERCEPTA o horário de almoço
+                // Lógica de interseção: (SlotInicio < AlmoçoFim) E (SlotFim > AlmoçoInicio)
+                if (startLunchMinutes != -1 && endLunchMinutes != -1) {
+                    if (currentMinutesOfDay < endLunchMinutes && endSlotMinutesOfDay > startLunchMinutes) {
+                        // Conflito com almoço
+                        slotCalendar.add(Calendar.MINUTE, slotStepMinutes)
+                        continue
+                    }
+                }
+
+                // VALIDAÇÃO 3: Conflito com Agendamentos Existentes
                 var isTaken = false
                 for (appointment in existingAppointments) {
                     val appStart = appointment.date
                     val appEnd = appStart + (appointment.durationMin * 60 * 1000)
+
+                    // Lógica de interseção de tempo
                     if (slotStart < appEnd && slotEnd > appStart) {
                         isTaken = true
                         break
@@ -157,13 +204,20 @@ class BookingViewModel : ViewModel() {
                     slots.add(slotStart)
                 }
 
-                // Avança 30 min
-                slotCalendar.add(Calendar.MINUTE, 30)
+                // Avança para o próximo slot
+                slotCalendar.add(Calendar.MINUTE, slotStepMinutes)
             }
 
             _availableSlots.value = slots
             _isLoadingSlots.value = false
         }
+    }
+
+    private fun parseTime(timeString: String): Pair<Int, Int> {
+        val parts = timeString.split(":")
+        val h = parts.getOrNull(0)?.toIntOrNull() ?: 0
+        val m = parts.getOrNull(1)?.toIntOrNull() ?: 0
+        return Pair(h, m)
     }
 
     fun createAppointment(appointment: Appointment) {

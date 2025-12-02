@@ -1,7 +1,9 @@
 package com.example.styloandroid.ui.auth
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -36,6 +38,18 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             findNavController().navigate(R.id.action_login_to_register)
         }
 
+        // --- LÓGICA DE ESQUECI MINHA SENHA ---
+        b.tvForgotPassword.setOnClickListener {
+            showForgotPasswordDialog()
+        }
+
+        vm.resetStatus.observe(viewLifecycleOwner) { msg ->
+            if (msg != null) {
+                Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
+                vm.clearResetStatus()
+            }
+        }
+
         vm.state.observe(viewLifecycleOwner) { res: AuthState ->
             when (res) {
                 is AuthState.Loading -> {
@@ -48,7 +62,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
                     when (res.role) {
                         "GESTOR" -> findNavController().navigate(R.id.action_login_to_home)
-                        // MUDANÇA AQUI: Funcionário vai para Home
                         "FUNCIONARIO" -> findNavController().navigate(R.id.action_login_to_home)
                         "CLIENTE" -> findNavController().navigate(R.id.action_login_to_client_home)
                         // Fallbacks
@@ -64,6 +77,25 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 }
             }
         }
+    }
+
+    private fun showForgotPasswordDialog() {
+        val input = EditText(requireContext())
+        input.hint = "Digite seu e-mail"
+        input.inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        // Preenche automaticamente se o usuário já digitou no campo de login
+        input.setText(b.etEmail.text)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Recuperar Senha")
+            .setMessage("Enviaremos um link para você redefinir sua senha.")
+            .setView(input) // Adiciona margens seria ideal, mas simplificando
+            .setPositiveButton("Enviar") { _, _ ->
+                val email = input.text.toString()
+                vm.forgotPassword(email)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     override fun onDestroyView() { super.onDestroyView(); _b = null }

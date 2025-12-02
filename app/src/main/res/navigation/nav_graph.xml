@@ -70,7 +70,19 @@
         <action
             android:id="@+id/action_client_home_to_appointments"
             app:destination="@id/clientAppointmentsFragment" />
+
+        <!-- NOVO: Ação para Perfil -->
+        <action
+            android:id="@+id/action_client_home_to_profile"
+            app:destination="@id/clientProfileFragment" />
     </fragment>
+
+    <!-- NOVO DESTINO -->
+    <fragment
+        android:id="@+id/clientProfileFragment"
+        android:name="com.example.styloandroid.ui.home.ClientProfileFragment"
+        android:label="Meu Perfil"
+        tools:layout="@layout/fragment_client_profile" />
 
     <fragment
         android:id="@+id/establishmentDetailFragment"
@@ -96,7 +108,6 @@
         android:label="Meus Serviços"
         tools:layout="@layout/fragment_services" />
 
-    <!-- NOVO DESTINO -->
     <fragment
         android:id="@+id/teamManagementFragment"
         android:name="com.example.styloandroid.ui.management.TeamManagementFragment"

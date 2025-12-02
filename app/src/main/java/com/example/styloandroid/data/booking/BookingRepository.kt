@@ -12,10 +12,23 @@ class BookingRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // --- INFORMAÇÕES DO ESTABELECIMENTO (NOVO) ---
+    // --- INFORMAÇÕES DO ESTABELECIMENTO E USUÁRIOS ---
+
+    // Busca informações genéricas (usado para pegar dados do Gestor)
     suspend fun getProviderInfo(providerId: String): AppUser? {
         return try {
             val doc = db.collection("users").document(providerId).get().await()
+            doc.toObject(AppUser::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // NOVO: Busca configuração específica de um funcionário (ou gestor) pelo ID
+    suspend fun getEmployeeConfig(employeeId: String): AppUser? {
+        return try {
+            val doc = db.collection("users").document(employeeId).get().await()
             doc.toObject(AppUser::class.java)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -72,7 +85,7 @@ class BookingRepository {
                 .await()
 
             snapshot.toObjects(Appointment::class.java)
-                .filter { it.status != "canceled" }
+                .filter { it.status != "canceled" } // Ignora cancelados para liberar a vaga
                 .sortedBy { it.date }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -172,7 +185,6 @@ class BookingRepository {
 
     suspend fun cancelAppointment(appointmentId: String): Boolean {
         return try {
-            // Atualiza apenas o campo 'status' para 'canceled'
             db.collection("appointments").document(appointmentId)
                 .update("status", "canceled")
                 .await()

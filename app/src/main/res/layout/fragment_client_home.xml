@@ -46,15 +46,32 @@
                         android:textColor="@color/black"/>
                 </LinearLayout>
 
-                <ImageButton
-                    android:id="@+id/btnLogout"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@android:drawable/ic_lock_power_off"
-                    app:tint="#D32F2F"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:layout_alignParentEnd="true"
-                    android:contentDescription="Sair"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_alignParentEnd="true">
+
+                    <!-- NOVO: Botão Perfil -->
+                    <ImageButton
+                        android:id="@+id/btnProfile"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@android:drawable/ic_menu_myplaces"
+                        app:tint="#212121"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Perfil"
+                        android:layout_marginEnd="8dp"/>
+
+                    <ImageButton
+                        android:id="@+id/btnLogout"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@android:drawable/ic_lock_power_off"
+                        app:tint="#D32F2F"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Sair"/>
+                </LinearLayout>
             </RelativeLayout>
 
             <com.google.android.material.textfield.TextInputLayout

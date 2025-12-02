@@ -36,25 +36,27 @@ data class AppUser(
     val updatedAt: Long = System.currentTimeMillis(),
     val photoUrl: String? = null,
 
+    // NOVO: Telefone pessoal (para Cliente ou Funcionário)
+    val phoneNumber: String? = null,
+
     // --- Campos Específicos do FUNCIONÁRIO ---
     val establishmentId: String? = null,
 
     // --- Campos Específicos do GESTOR (Dono do Negócio) ---
     val businessName: String? = null,
     val cnpj: String? = null,
-    val businessPhone: String? = null,
+    val businessPhone: String? = null, // Telefone comercial
     val areaOfWork: String? = null,
     val socialLinks: SocialLinks? = null,
     val paymentMethods: List<String>? = null,
     val businessAddress: BusinessAddress? = null,
     val subscriptionStatus: String? = "trial",
 
-    // --- NOVO: CONFIGURAÇÕES DE HORÁRIO ---
-    // Formato "HH:mm". Default 09:00 as 20:00
+    // --- CONFIGURAÇÕES DE HORÁRIO E AGENDA ---
     val openTime: String? = "09:00",
     val closeTime: String? = "20:00",
-
-    // Lista de dias que abre (Calendar.SUNDAY = 1, MONDAY = 2, etc.)
-    // Default: Seg(2) a Sab(7)
-    val workDays: List<Int>? = listOf(2,3,4,5,6,7)
+    val lunchStartTime: String? = null,
+    val lunchEndTime: String? = null,
+    val workDays: List<Int>? = listOf(2,3,4,5,6,7),
+    val blockedDates: List<String>? = emptyList()
 )
