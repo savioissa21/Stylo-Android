@@ -86,7 +86,7 @@ class ClientAppointmentsAdapter(
                 "finished" -> {
                     tvStatus.text = "CONCLUÍDO"
                     tvStatus.setTextColor(Color.GRAY)
-                    tvStatus.setBackgroundColor(Color.parseColor("#F5F5F5"))
+                    tvStatus.setBackgroundColor(Color.parseColor("android:background=\"?android:attr/colorBackground"))
 
                     btnCancel.isVisible = false
                     // Avaliar se ainda não avaliou

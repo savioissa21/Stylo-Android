@@ -47,12 +47,12 @@ class TimeSlotAdapter(
 
             // Estilo de Seleção
             if (position == selectedPosition) {
-                card.setCardBackgroundColor(Color.parseColor("#212121")) // Preto (Selecionado)
+                card.setCardBackgroundColor(Color.parseColor("android:textColor=\"?attr/colorOnSurface")) // Preto (Selecionado)
                 tvTime.setTextColor(Color.WHITE)
-                card.strokeColor = Color.parseColor("#212121")
+                card.strokeColor = Color.parseColor("android:textColor=\"?attr/colorOnSurface")
             } else {
                 card.setCardBackgroundColor(Color.WHITE)
-                tvTime.setTextColor(Color.parseColor("#212121"))
+                tvTime.setTextColor(Color.parseColor("android:textColor=\"?attr/colorOnSurface"))
                 card.strokeColor = Color.parseColor("#E0E0E0")
             }
 

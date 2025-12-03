@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         tools:text="Corte de Cabelo - R$ 35,00"
         android:textSize="14sp"
-        android:textColor="#757575"
+        android:textColor="@color/text_secondary"
         android:layout_marginHorizontal="24dp"
         android:layout_marginBottom="16dp"/>
 
@@ -87,7 +87,7 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/ic_launcher_background"
-                android:backgroundTint="#F5F5F5"
+                android:backgroundTint="?android:attr/colorBackground"
                 android:padding="12dp"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="8dp"
@@ -97,14 +97,14 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_today"
-                    app:tint="#212121"/>
+                    app:tint="?attr/colorOnSurface"/>
                 <TextView
                     android:id="@+id/tvSelectedDateString"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Selecione..."
-                    android:textColor="#212121"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp"
                     android:layout_marginStart="12dp"/>
                 <ImageView

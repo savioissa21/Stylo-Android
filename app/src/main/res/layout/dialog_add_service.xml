@@ -16,7 +16,7 @@
             android:text="Novo Serviço"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="#212121"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="16dp"/>
 
         <!-- Nome do Serviço -->
@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:text="Nenhum funcionário cadastrado."
             android:textSize="12sp"
-            android:textColor="#757575"
+            android:textColor="@color/text_secondary"
             android:visibility="gone"/>
 
         <!-- Container para os Checkboxes dinâmicos -->
@@ -107,7 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Cancelar"
-                android:textColor="#757575"/>
+                android:textColor="@color/text_secondary"/>
 
             <Button
                 android:id="@+id/btnSave"

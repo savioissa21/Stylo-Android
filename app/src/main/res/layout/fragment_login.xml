@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue_bg_light">
+    android:background="@color/background_light">
 
     <View
         android:id="@+id/viewHeader"
@@ -98,7 +98,7 @@
                     android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Botão Esqueci a Senha (NOVO) -->
+
             <TextView
                 android:id="@+id/tvForgotPassword"
                 android:layout_width="wrap_content"

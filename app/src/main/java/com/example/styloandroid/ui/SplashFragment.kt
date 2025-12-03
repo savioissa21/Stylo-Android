@@ -18,7 +18,7 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.launch {
-            delay(1500)
+            delay(2000)
             checkAuthStatus()
         }
     }
