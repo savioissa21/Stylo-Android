@@ -1,4 +1,4 @@
-package com.example.styloandroid.data.auth
+package com.example.styloandroid.data.model
 
 /**
  * Modelo de dados para o Endereço Comercial (Para o GESTOR)

@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.styloandroid.R
 import com.example.styloandroid.data.model.AppUser
 import com.example.styloandroid.databinding.FragmentTeamManagementBinding
-import com.example.styloandroid.ui.management.TeamViewModel
+import com.example.styloandroid.ui.manager.team.TeamViewModel
 import com.google.android.material.textfield.TextInputEditText
 
 class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {

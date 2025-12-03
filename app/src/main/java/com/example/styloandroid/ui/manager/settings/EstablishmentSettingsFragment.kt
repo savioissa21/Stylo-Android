@@ -14,7 +14,7 @@ import coil.load
 import coil.transform.CircleCropTransformation
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentEstablishmentSettingsBinding
-import com.example.styloandroid.ui.management.EstablishmentSettingsViewModel
+import com.example.styloandroid.ui.manager.settings.EstablishmentSettingsViewModel
 import java.util.Calendar
 import java.util.Locale
 

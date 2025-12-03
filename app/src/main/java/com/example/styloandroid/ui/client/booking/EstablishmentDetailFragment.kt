@@ -18,9 +18,9 @@ import com.example.styloandroid.data.model.AppUser
 import com.example.styloandroid.data.model.Appointment
 import com.example.styloandroid.data.model.Service
 import com.example.styloandroid.databinding.FragmentEstablishmentDetailBinding
-import com.example.styloandroid.ui.booking.BookingServiceAdapter
-import com.example.styloandroid.ui.booking.BookingViewModel
-import com.example.styloandroid.ui.booking.TimeSlotAdapter
+import com.example.styloandroid.ui.client.booking.BookingServiceAdapter
+import com.example.styloandroid.ui.client.booking.BookingViewModel
+import com.example.styloandroid.ui.client.booking.TimeSlotAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
