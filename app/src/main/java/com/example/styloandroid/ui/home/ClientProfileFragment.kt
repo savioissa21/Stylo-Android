@@ -47,7 +47,11 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
         binding.btnChangePhoto.setOnClickListener {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
-
+        binding.btnViewHistory.setOnClickListener {
+            // Navega para o fragmento de Agendamentos
+            // Nota: Certifique-se de que o ID 'clientAppointmentsFragment' existe no seu nav_graph.xml
+            findNavController().navigate(R.id.clientAppointmentsFragment)
+        }
         binding.btnSave.setOnClickListener {
             val name = binding.etName.text.toString()
             val phone = binding.etPhone.text.toString()

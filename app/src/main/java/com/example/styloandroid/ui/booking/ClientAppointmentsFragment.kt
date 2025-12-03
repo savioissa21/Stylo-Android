@@ -45,12 +45,12 @@ class ClientAppointmentsFragment : Fragment(R.layout.fragment_client_appointment
     }
 
     private fun setupListeners() {
-        // Listener do Toggle Button (Abas)
+
         binding.toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
-                    R.id.btnUpcoming -> vm.selectTab(0)
-                    R.id.btnHistory -> vm.selectTab(1)
+                    R.id.btnUpcoming -> vm.selectTab(0) // Mostra lista de futuros
+                    R.id.btnHistory -> vm.selectTab(1)  // Mostra lista de histórico
                 }
             }
         }

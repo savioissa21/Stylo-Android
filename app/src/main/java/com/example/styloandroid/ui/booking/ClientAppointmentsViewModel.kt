@@ -40,6 +40,7 @@ class ClientAppointmentsViewModel : ViewModel() {
             val upcoming = mutableListOf<Appointment>()
             val history = mutableListOf<Appointment>()
 
+
             allAppointments.forEach { app ->
                 // Considera histórico se: Status for cancelado/concluído OU a data já passou
                 val isFinished = app.status == "finished" || app.status == "canceled"

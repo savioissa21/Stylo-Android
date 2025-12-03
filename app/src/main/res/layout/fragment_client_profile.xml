@@ -115,5 +115,19 @@
             android:textColor="@android:color/white"
             android:paddingVertical="12dp"/>
 
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewHistory"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Ver Histórico de Agendamentos"
+            android:textColor="@color/black"
+            app:strokeColor="@color/black"
+            app:icon="@android:drawable/ic_menu_agenda"
+            app:iconTint="@color/black"
+            app:iconGravity="textStart"/>
+
     </LinearLayout>
 </ScrollView>
