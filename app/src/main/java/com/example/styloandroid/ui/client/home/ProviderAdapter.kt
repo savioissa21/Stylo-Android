@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.styloandroid.R
-import com.example.styloandroid.data.ProviderCardData
+import com.example.styloandroid.data.model.ProviderCardData
 
 class ProviderAdapter(
     private var providers: List<ProviderCardData>,

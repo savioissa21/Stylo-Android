@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.styloandroid.data.ProviderCardData
+import com.example.styloandroid.data.model.ProviderCardData
 import com.example.styloandroid.data.model.Appointment
 import com.example.styloandroid.data.repository.AuthRepository
 import com.example.styloandroid.data.repository.BookingRepository

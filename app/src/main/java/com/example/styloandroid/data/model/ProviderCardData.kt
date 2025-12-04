@@ -1,4 +1,4 @@
-package com.example.styloandroid.data
+package com.example.styloandroid.data.model
 
 /**
  * Modelo de dados simplificado para exibição no card de busca do cliente.

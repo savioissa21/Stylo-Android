@@ -1,4 +1,4 @@
-package com.example.styloandroid.ui.home
+package com.example.styloandroid.ui.client.profile
 
 import android.os.Bundle
 import android.view.View
@@ -13,6 +13,7 @@ import coil.load
 import coil.transform.CircleCropTransformation
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentClientProfileBinding
+import com.example.styloandroid.ui.client.profile.ClientProfileViewModel
 
 class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
 

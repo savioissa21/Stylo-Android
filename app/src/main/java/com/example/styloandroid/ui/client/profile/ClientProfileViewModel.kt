@@ -1,4 +1,4 @@
-package com.example.styloandroid.ui.home
+package com.example.styloandroid.ui.client.profile
 
 import android.net.Uri
 import androidx.lifecycle.LiveData
