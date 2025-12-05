@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -13,7 +14,8 @@ import com.example.styloandroid.data.model.ProviderCardData
 
 class ProviderAdapter(
     private var providers: List<ProviderCardData>,
-    private val onClick: (ProviderCardData) -> Unit
+    private val onClick: (ProviderCardData) -> Unit,
+    private val onFavoriteClick: (ProviderCardData) -> Unit // NOVO CALLBACK
 ) : RecyclerView.Adapter<ProviderAdapter.ProviderViewHolder>() {
 
     fun updateList(newList: List<ProviderCardData>) {
@@ -28,8 +30,7 @@ class ProviderAdapter(
     }
 
     override fun onBindViewHolder(holder: ProviderViewHolder, position: Int) {
-        val provider = providers[position]
-        holder.bind(provider)
+        holder.bind(providers[position])
     }
 
     override fun getItemCount() = providers.size
@@ -38,32 +39,38 @@ class ProviderAdapter(
         private val tvName: TextView = itemView.findViewById(R.id.tvBusinessName)
         private val tvCategory: TextView = itemView.findViewById(R.id.tvCategory)
         private val tvRating: TextView = itemView.findViewById(R.id.tvRating)
-        private val ivImage: ImageView = itemView.findViewById(R.id.ivProviderImage) // Pega a ImageView
+        private val ivImage: ImageView = itemView.findViewById(R.id.ivProviderImage)
         private val btnBook: Button = itemView.findViewById(R.id.btnBookNow)
+        private val btnFavorite: ImageButton = itemView.findViewById(R.id.btnFavorite) // Pega o botão
 
         fun bind(provider: ProviderCardData) {
             tvName.text = provider.businessName
             tvCategory.text = provider.areaOfWork
             tvRating.text = provider.rating.toString()
 
-            // Carrega a imagem se existir
+            // Define o ícone correto
+            val heartIcon = if (provider.isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
+            btnFavorite.setImageResource(heartIcon)
+
+            // Carrega imagem (mantido igual)
             if (provider.profileImageUrl != null) {
                 ivImage.load(provider.profileImageUrl) {
                     crossfade(true)
-                    // Se quiser cortar redonda, descomente a linha abaixo.
-                    // Como no seu XML ela é "centerCrop" e quadrada (banner), talvez não precise.
-                    // transformations(CircleCropTransformation())
-                    placeholder(R.drawable.ic_launcher_background) // Imagem enquanto carrega
-                    error(R.drawable.ic_launcher_background) // Imagem se der erro
+                    placeholder(R.drawable.ic_launcher_background)
+                    error(R.drawable.ic_launcher_background)
                 }
             } else {
-                // Reseta para padrão se não tiver foto
                 ivImage.setImageResource(R.drawable.ic_launcher_background)
             }
 
-            // Clique tanto no card quanto no botão levam ao detalhe
+            // Cliques
             itemView.setOnClickListener { onClick(provider) }
             btnBook.setOnClickListener { onClick(provider) }
+
+            // Clique do Favorito
+            btnFavorite.setOnClickListener {
+                onFavoriteClick(provider)
+            }
         }
     }
 }

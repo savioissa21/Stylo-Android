@@ -40,8 +40,9 @@ class AuthRepository(
                         val createRes = auth.createUserWithEmailAndPassword(email, pass).await()
                         val user = createRes.user!!
 
+                        // CORREÇÃO AQUI: Sintaxe correta do DSL
                         user.updateProfile(userProfileChangeRequest {
-                            UserProfileChangeRequest.Builder.setDisplayName = name
+                            displayName = name
                         }).await()
 
                         val appUser = AppUser(
@@ -94,8 +95,9 @@ class AuthRepository(
             db.collection("users").document(uid).update(updates).await()
 
             // Atualiza também no Auth Profile para consistência
+            // CORREÇÃO AQUI TAMBÉM: Sintaxe correta do DSL
             val profileUpdates = userProfileChangeRequest {
-                UserProfileChangeRequest.Builder.setDisplayName = name
+                displayName = name
             }
             auth.currentUser?.updateProfile(profileUpdates)?.await()
 

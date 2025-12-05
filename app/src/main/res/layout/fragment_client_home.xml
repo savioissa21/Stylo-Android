@@ -40,7 +40,7 @@
                         android:id="@+id/tvWelcomeClient"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bem-vindo(a)"
+                        tools:text="Bem-vindo(a)"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>
@@ -52,7 +52,6 @@
                     android:orientation="horizontal"
                     android:layout_alignParentEnd="true">
 
-                    <!-- NOVO: Botão Perfil -->
                     <ImageButton
                         android:id="@+id/btnProfile"
                         android:layout_width="40dp"
@@ -60,7 +59,7 @@
                         android:src="@android:drawable/ic_menu_myplaces"
                         app:tint="?attr/colorOnSurface"
                         android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Perfil"
+                        android:contentDescription="Meu Perfil"
                         android:layout_marginEnd="8dp"/>
 
                     <ImageButton
@@ -74,25 +73,62 @@
                 </LinearLayout>
             </RelativeLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilSearch"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:layout_marginTop="16dp"
-                android:hint="Buscar barbearia, salão..."
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:startIconDrawable="@android:drawable/ic_menu_search">
+                android:gravity="center_vertical">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etSearch"
-                    android:layout_width="match_parent"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilSearch"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:inputType="text"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:hint="Buscar barbearia, salão..."
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:startIconDrawable="@android:drawable/ic_menu_search">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnOpenFilters"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#9E9E9E"
+                    app:cardBackgroundColor="@android:color/white"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_preferences"
+                        app:tint="#424242"
+                        android:layout_gravity="center"/>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFavorites"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Apenas Favoritos ❤"
+                android:checkable="true"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_marginTop="12dp"/>
 
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -107,25 +143,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCategories"
+            <TextView
+                android:id="@+id/tvEmptyState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:clipToPadding="false"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp"
-                tools:listitem="@android:layout/simple_list_item_1"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Melhores Avaliados"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="16dp"/>
+                android:text="Nenhum estabelecimento encontrado."
+                android:gravity="center"
+                android:padding="32dp"
+                android:textColor="@color/text_secondary"
+                android:visibility="gone"/>
 
             <ProgressBar
                 android:id="@+id/progressBar"
@@ -135,15 +161,6 @@
                 android:layout_marginTop="32dp"
                 android:visibility="gone"/>
 
-            <TextView
-                android:id="@+id/tvEmptyState"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Nenhum estabelecimento encontrado com este filtro."
-                android:gravity="center"
-                android:padding="32dp"
-                android:visibility="gone"/>
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvProviders"
                 android:layout_width="match_parent"
@@ -151,7 +168,9 @@
                 android:clipToPadding="false"
                 android:paddingBottom="100dp"
                 android:paddingTop="8dp"
-                android:nestedScrollingEnabled="false"/>
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_provider_card"/>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
