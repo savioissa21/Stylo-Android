@@ -40,7 +40,6 @@ class BookingServiceAdapter(
         fun bind(service: Service) {
             tvName.text = service.name
 
-            // Formatação de Moeda Brasil
             val format = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
             tvPrice.text = format.format(service.price)
 

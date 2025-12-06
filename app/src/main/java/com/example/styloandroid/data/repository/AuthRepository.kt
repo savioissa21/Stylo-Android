@@ -40,7 +40,6 @@ class AuthRepository(
                         val createRes = auth.createUserWithEmailAndPassword(email, pass).await()
                         val user = createRes.user!!
 
-                        // CORREÇÃO AQUI: Sintaxe correta do DSL
                         user.updateProfile(userProfileChangeRequest {
                             displayName = name
                         }).await()
@@ -65,7 +64,7 @@ class AuthRepository(
             }
         }
 
-    // NOVO: Enviar e-mail de redefinição de senha
+    // Enviar e-mail de redefinição de senha
     suspend fun sendPasswordReset(email: String): Boolean {
         return try {
             auth.sendPasswordResetEmail(email).await()
@@ -75,7 +74,7 @@ class AuthRepository(
         }
     }
 
-    // NOVO: Atualizar Perfil Genérico (Cliente ou qualquer user)
+    // Atualizar Perfil Genérico (Cliente ou qualquer user)
     suspend fun updateUserProfile(name: String, phone: String, photoUri: Uri?): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         return try {
@@ -95,7 +94,6 @@ class AuthRepository(
             db.collection("users").document(uid).update(updates).await()
 
             // Atualiza também no Auth Profile para consistência
-            // CORREÇÃO AQUI TAMBÉM: Sintaxe correta do DSL
             val profileUpdates = userProfileChangeRequest {
                 displayName = name
             }

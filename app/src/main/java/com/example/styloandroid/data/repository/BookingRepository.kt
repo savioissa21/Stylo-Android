@@ -25,7 +25,7 @@ class BookingRepository {
         }
     }
 
-    // NOVO: Busca configuração específica de um funcionário (ou gestor) pelo ID
+    // Busca configuração específica de um funcionário (ou gestor) pelo ID
     suspend fun getEmployeeConfig(employeeId: String): AppUser? {
         return try {
             val doc = db.collection("users").document(employeeId).get().await()

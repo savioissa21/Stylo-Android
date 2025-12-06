@@ -26,9 +26,8 @@ data class AppUser(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val photoUrl: String? = null,
-    val bannerUrl: String? = null, // NOVO CAMPO: Capa do estabelecimento
+    val bannerUrl: String? = null, 
 
-    // NOVO: Telefone pessoal (para Cliente ou Funcionário)
     val phoneNumber: String? = null,
 
     // --- Campos Específicos do FUNCIONÁRIO ---
@@ -37,7 +36,7 @@ data class AppUser(
     // --- Campos Específicos do GESTOR (Dono do Negócio) ---
     val businessName: String? = null,
     val cnpj: String? = null,
-    val businessPhone: String? = null, // Telefone comercial
+    val businessPhone: String? = null,
     val areaOfWork: String? = null,
     val socialLinks: SocialLinks? = null,
     val paymentMethods: List<String>? = null,

@@ -145,7 +145,7 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
                 text = city
                 isCheckable = true
                 isClickable = true
-                tag = city // Guarda o valor real na tag
+                tag = city
             }
             cgCities.addView(chip)
         }

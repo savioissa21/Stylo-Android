@@ -71,7 +71,7 @@ class EstablishmentRepository {
         } catch (e: Exception) { null }
     }
 
-    // ATUALIZADO: Salva o perfil completo (Info + Horários)
+    // Salva o perfil completo (Info + Horários)
     suspend fun updateFullProfile(
         businessName: String,
         businessPhone: String,

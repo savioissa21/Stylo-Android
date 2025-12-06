@@ -31,7 +31,7 @@ class LoginViewModel(
         }
     }
 
-    // NOVO: Lógica de reset
+    // Lógica de reset
     fun forgotPassword(email: String) {
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _resetStatus.value = "Digite um e-mail válido."

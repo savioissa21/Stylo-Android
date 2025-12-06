@@ -18,9 +18,7 @@ class RegisterViewModel(
     private val _state = MutableLiveData<AuthResult>()
     val state: LiveData<AuthResult> = _state
 
-    /**
-     * Data class para organizar os dados do formulário (evita 15 parâmetros)
-     */
+    // Data class para organizar os dados do formulário (evita 15 parâmetros)
     data class RegisterData(
         val name: String,
         val email: String,
@@ -36,9 +34,7 @@ class RegisterViewModel(
         val businessAddress: BusinessAddress?
     )
 
-    /**
-     * Função de registro atualizada para receber o RegisterData
-     */
+     // Função de registro atualizada para receber o RegisterData
     fun register(data: RegisterData) {
         // Validações básicas (Step 1)
         when {
@@ -90,10 +86,6 @@ class RegisterViewModel(
 
                 // 2. ATRIBUI O RESULTADO DIRETO, que já contém o UID e o ROLE.
                 _state.value = result
-
-                // As linhas que causavam o erro (uid e data) foram removidas:
-                // val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                // _state.value = AuthResult.Success(uid)
 
             } catch (e: Exception) {
                 _state.value = AuthResult.Error(e.message ?: "Falha no registro")

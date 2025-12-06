@@ -46,7 +46,7 @@ class ClientAppointmentsAdapter(
         private val tvStatus: TextView = itemView.findViewById(R.id.tvStatusBadge)
 
         private val btnRate: Button = itemView.findViewById(R.id.btnRate)
-        private val btnCancel: Button = itemView.findViewById(R.id.btnCancel) // NOVO BOTÃO
+        private val btnCancel: Button = itemView.findViewById(R.id.btnCancel)
 
         fun bind(item: Appointment) {
             val cal = Calendar.getInstance().apply { timeInMillis = item.date }

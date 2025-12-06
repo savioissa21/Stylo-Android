@@ -105,7 +105,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             }
         }
 
-        // NOVO: Observa se está enviando o agendamento (LOADING)
+        // Observa se está enviando o agendamento (LOADING)
         vm.isBookingLoading.observe(viewLifecycleOwner) { isLoading ->
             // Se o bottom sheet estiver aberto, atualiza a UI dele
             if (activeBookingSheet?.isShowing == true) {
@@ -158,7 +158,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             sheetBtnConfirm?.alpha = 1.0f
             val btnText = "Confirmar para " + SimpleDateFormat("HH:mm", Locale.getDefault()).format(timestamp)
             sheetBtnConfirm?.text = btnText
-            sheetBtnConfirm?.tag = btnText // Guarda texto original no tag
+            sheetBtnConfirm?.tag = btnText
         }
         rvSlots.layoutManager = GridLayoutManager(requireContext(), 4)
         rvSlots.adapter = timeAdapter
@@ -184,56 +184,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
             vm.loadTimeSlots(selectedDateCal, service.durationMin, selectedEmployee!!.uid)
         }
-
-        // Observadores locais para slots (mantidos aqui pois são específicos desta instância do sheet)
-        // OBS: Cuidado com vazamento de observers. Como usamos viewLifecycleOwner e LiveData, 
-        // eles seriam atrelados ao Fragment. O ideal seria o Fragment observar sempre e atualizar "activeSheet".
-        // O setupObservers já trata o `availableSlots`? Vamos checar.
-        // O `vm.availableSlots` foi observado no código anterior DENTRO do openBookingSheet.
-        // Isso cria múltiplos observers se abrir/fechar várias vezes.
-        // CORREÇÃO: Mover observers de slots para setupObservers também.
-        
-        // Vamos mover a lógica de UI dos slots para cá, mas usando o LiveData do VM.
-        // Como o Fragment vive mais que o Dialog, precisamos checar se o Dialog está mostrando.
-        
-        // Para simplificar e evitar refatoração massiva agora, vamos remover os observers antigos
-        // de dentro desta função e usar os globais no `setupObservers`.
-        
-        // --- ADIÇÃO NO setupObservers (Coloque isso dentro do método setupObservers lá em cima) ---
-        /*
-        vm.availableSlots.observe(viewLifecycleOwner) { slots ->
-            if (activeBookingSheet?.isShowing == true) {
-                // Precisamos acessar o adapter. Como ele é local, podemos guardá-lo ou 
-                // recriar a referência. Uma forma simples é buscar a RV na view do dialog ativo.
-                val rv = activeBookingSheet?.findViewById<RecyclerView>(R.id.rvTimeSlots)
-                val noSlots = activeBookingSheet?.findViewById<View>(R.id.tvNoSlots)
-                
-                (rv?.adapter as? TimeSlotAdapter)?.submitList(slots)
-                noSlots?.isVisible = slots.isEmpty()
-                rv?.isVisible = slots.isNotEmpty()
-            }
-        }
-
-        vm.isLoadingSlots.observe(viewLifecycleOwner) { loading ->
-            if (activeBookingSheet?.isShowing == true) {
-                val progress = activeBookingSheet?.findViewById<View>(R.id.progressSlots)
-                val rv = activeBookingSheet?.findViewById<View>(R.id.rvTimeSlots)
-                val noSlots = activeBookingSheet?.findViewById<View>(R.id.tvNoSlots)
-                
-                progress?.isVisible = loading
-                if(loading) {
-                    rv?.isVisible = false
-                    noSlots?.isVisible = false
-                }
-            }
-        }
-        */
-        
-        // MANTENDO A ESTRUTURA ORIGINAL (com observer local) para menor impacto, 
-        // mas ciente que removemos o observer ao fechar seria o ideal. 
-        // O `viewLifecycleOwner` limpa os observers quando a VIEW do fragmento morre (navegação).
-        // Se abrir/fechar o dialog 10 vezes na mesma tela, teremos 10 observers.
-        // MELHOR PRÁTICA RÁPIDA: vm.availableSlots.removeObservers(viewLifecycleOwner) antes de observar.
         
         vm.availableSlots.removeObservers(viewLifecycleOwner)
         vm.availableSlots.observe(viewLifecycleOwner) { slots ->
@@ -250,8 +200,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 tvNoSlots.isVisible = false
             }
         }
-
-        // ... (Restante da lógica de Chips e DatePicker mantida igual) ...
         
         val qualifiedEmployees = vm.getEmployeesForService(service)
         if (qualifiedEmployees.isEmpty()) {
@@ -323,8 +271,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             // Inicia o agendamento (O loading será ativado pelo ViewModel)
             vm.createAppointment(appointment)
             
-            // NÃO FECHAMOS O DIALOG AQUI MAIS.
-            // O observer de `bookingStatus` no `setupObservers` fará isso no sucesso.
         }
 
         sheetDialog.show()

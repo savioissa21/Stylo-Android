@@ -73,9 +73,6 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    // =========================================================================
-    // LÓGICA DO PROFISSIONAL (DASHBOARD) - [Restaurada]
-    // =========================================================================
 
     fun loadDashboardData() {
         viewModelScope.launch {
@@ -109,10 +106,6 @@ class HomeViewModel : ViewModel() {
 
         _nextAppointment.value = next
     }
-
-    // =========================================================================
-    // LÓGICA DO CLIENTE (BUSCA E FILTROS)
-    // =========================================================================
 
     fun fetchProviders() {
         viewModelScope.launch {
@@ -228,10 +221,6 @@ class HomeViewModel : ViewModel() {
 
         _providers.value = result
     }
-
-    // =========================================================================
-    // COMUM
-    // =========================================================================
 
     fun logout() {
         authRepo.logout()

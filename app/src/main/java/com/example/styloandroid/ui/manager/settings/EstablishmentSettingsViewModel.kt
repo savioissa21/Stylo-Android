@@ -56,7 +56,7 @@ class EstablishmentSettingsViewModel : ViewModel() {
         }
     }
 
-    // NOVO: Atualiza Banner
+    // Atualiza Banner
     fun updateBannerImage(uri: Uri) {
         _isLoadingBanner.value = true
         viewModelScope.launch {
@@ -75,7 +75,7 @@ class EstablishmentSettingsViewModel : ViewModel() {
         }
     }
 
-    // NOVO: Salva TUDO (Dados + Endereço + Horários)
+    // Salva TUDO (Dados + Endereço + Horários)
     fun saveFullProfile(
         businessName: String,
         phone: String,
