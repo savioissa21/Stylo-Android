@@ -1,3 +1,5 @@
+// Caminho: app/src/main/java/com/example/styloandroid/ui/manager/settings/EstablishmentSettingsFragment.kt
+
 package com.example.styloandroid.ui.manager.settings
 
 import android.app.TimePickerDialog
@@ -24,26 +26,49 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
     private val binding get() = _binding!!
     private val vm: EstablishmentSettingsViewModel by viewModels()
 
-    // Lançador para abrir a galeria (Novo padrão Android)
-    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            vm.updateProfileImage(uri)
-        } else {
-            Toast.makeText(requireContext(), "Nenhuma imagem selecionada", Toast.LENGTH_SHORT).show()
-        }
+    // Launcher para Foto de Perfil
+    private val pickProfile = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) vm.updateProfileImage(uri)
+    }
+
+    // Launcher para Banner (NOVO)
+    private val pickBanner = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) vm.updateBannerImage(uri)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentEstablishmentSettingsBinding.bind(view)
 
-        setupTimePickers()
-        setupSaveButton()
-        setupImagePicker() // Novo
+        setupListeners()
+        setupObservers()
 
+        vm.loadCurrentSettings()
+    }
+
+    private fun setupListeners() {
+        // Seletores de Imagem
+        binding.btnChangePhoto.setOnClickListener {
+            pickProfile.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+        binding.btnChangeBanner.setOnClickListener {
+            pickBanner.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+
+        // Seletores de Horário
+        binding.btnOpenTime.setOnClickListener { showTimePicker(binding.tvOpenTime) }
+        binding.btnCloseTime.setOnClickListener { showTimePicker(binding.tvCloseTime) }
+
+        // Botão Salvar Geral
+        binding.btnSaveSettings.setOnClickListener {
+            saveAllData()
+        }
+    }
+
+    private fun setupObservers() {
         vm.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                // Carrega a imagem com Coil
+                // 1. Imagens
                 if (!user.photoUrl.isNullOrEmpty()) {
                     binding.ivProfile.load(user.photoUrl) {
                         crossfade(true)
@@ -52,8 +77,33 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
                         error(R.drawable.ic_launcher_background)
                     }
                 }
+                if (!user.bannerUrl.isNullOrEmpty()) {
+                    binding.ivBanner.load(user.bannerUrl) {
+                        crossfade(true)
+                        placeholder(android.R.color.darker_gray)
+                    }
+                }
 
-                // Preenche horários (código existente)
+                // 2. Dados de Texto
+                binding.etBusinessName.setText(user.businessName)
+                binding.etBusinessPhone.setText(user.businessPhone)
+
+                // 3. Endereço
+                user.businessAddress?.let { addr ->
+                    binding.etStreet.setText(addr.street)
+                    binding.etNumber.setText(addr.number)
+                    binding.etNeighborhood.setText(addr.neighborhood)
+                    binding.etCity.setText(addr.city)
+                    binding.etState.setText(addr.state)
+                }
+
+                // 4. Redes Sociais
+                user.socialLinks?.let { social ->
+                    binding.etInstagram.setText(social.instagram)
+                    binding.etFacebook.setText(social.facebook)
+                }
+
+                // 5. Horários e Dias
                 binding.tvOpenTime.text = user.openTime ?: "09:00"
                 binding.tvCloseTime.text = user.closeTime ?: "20:00"
 
@@ -68,10 +118,18 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
             }
         }
 
-        // Loading da imagem
-        vm.isLoading.observe(viewLifecycleOwner) { loading ->
+        // Loadings Independentes
+        vm.isLoadingPhoto.observe(viewLifecycleOwner) { loading ->
             binding.progressPhoto.isVisible = loading
             binding.btnChangePhoto.isEnabled = !loading
+        }
+        vm.isLoadingBanner.observe(viewLifecycleOwner) { loading ->
+            binding.progressBanner.isVisible = loading
+            binding.btnChangeBanner.isEnabled = !loading
+        }
+        vm.isLoading.observe(viewLifecycleOwner) { loading ->
+            binding.btnSaveSettings.isEnabled = !loading
+            binding.btnSaveSettings.text = if(loading) "Salvando..." else "Salvar Alterações"
         }
 
         vm.statusMsg.observe(viewLifecycleOwner) { msg ->
@@ -80,24 +138,36 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
                 vm.clearStatus()
             }
         }
-
-        vm.loadCurrentSettings()
     }
 
-    private fun setupImagePicker() {
-        binding.btnChangePhoto.setOnClickListener {
-            // Abre o seletor de fotos (apenas imagens)
-            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        }
-    }
+    private fun saveAllData() {
+        val name = binding.etBusinessName.text.toString()
+        val phone = binding.etBusinessPhone.text.toString()
+        
+        val street = binding.etStreet.text.toString()
+        val num = binding.etNumber.text.toString()
+        val neigh = binding.etNeighborhood.text.toString()
+        val city = binding.etCity.text.toString()
+        val state = binding.etState.text.toString()
 
-    private fun setupTimePickers() {
-        binding.btnOpenTime.setOnClickListener {
-            showTimePicker(binding.tvOpenTime)
-        }
-        binding.btnCloseTime.setOnClickListener {
-            showTimePicker(binding.tvCloseTime)
-        }
+        val insta = binding.etInstagram.text.toString()
+        val face = binding.etFacebook.text.toString()
+
+        val open = binding.tvOpenTime.text.toString()
+        val close = binding.tvCloseTime.text.toString()
+
+        val days = mutableListOf<Int>()
+        if (binding.chipDom.isChecked) days.add(Calendar.SUNDAY)
+        if (binding.chipSeg.isChecked) days.add(Calendar.MONDAY)
+        if (binding.chipTer.isChecked) days.add(Calendar.TUESDAY)
+        if (binding.chipQua.isChecked) days.add(Calendar.WEDNESDAY)
+        if (binding.chipQui.isChecked) days.add(Calendar.THURSDAY)
+        if (binding.chipSex.isChecked) days.add(Calendar.FRIDAY)
+        if (binding.chipSab.isChecked) days.add(Calendar.SATURDAY)
+
+        vm.saveFullProfile(
+            name, phone, street, num, neigh, city, state, insta, face, open, close, days
+        )
     }
 
     private fun showTimePicker(tv: TextView) {
@@ -109,24 +179,6 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
             val formatted = String.Companion.format(Locale.getDefault(), "%02d:%02d", hour, minute)
             tv.text = formatted
         }, h, m, true).show()
-    }
-
-    private fun setupSaveButton() {
-        binding.btnSaveSettings.setOnClickListener {
-            val open = binding.tvOpenTime.text.toString()
-            val close = binding.tvCloseTime.text.toString()
-
-            val days = mutableListOf<Int>()
-            if (binding.chipDom.isChecked) days.add(Calendar.SUNDAY)
-            if (binding.chipSeg.isChecked) days.add(Calendar.MONDAY)
-            if (binding.chipTer.isChecked) days.add(Calendar.TUESDAY)
-            if (binding.chipQua.isChecked) days.add(Calendar.WEDNESDAY)
-            if (binding.chipQui.isChecked) days.add(Calendar.THURSDAY)
-            if (binding.chipSex.isChecked) days.add(Calendar.FRIDAY)
-            if (binding.chipSab.isChecked) days.add(Calendar.SATURDAY)
-
-            vm.saveSettings(open, close, days)
-        }
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }

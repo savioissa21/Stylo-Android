@@ -2,7 +2,9 @@ package com.example.styloandroid.data.repository
 
 import android.net.Uri
 import com.example.styloandroid.data.model.AppUser
+import com.example.styloandroid.data.model.BusinessAddress
 import com.example.styloandroid.data.model.Service
+import com.example.styloandroid.data.model.SocialLinks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -14,8 +16,7 @@ class EstablishmentRepository {
     private val auth = FirebaseAuth.getInstance()
     private val storage = FirebaseStorage.getInstance()
 
-    // --- LÓGICA DE UPLOAD DE IMAGEM ---
-
+    // --- LÓGICA DE UPLOAD DE IMAGEM (PERFIL) ---
     suspend fun uploadProfileImage(imageUri: Uri): String? {
         val uid = auth.currentUser?.uid ?: return null
         return try {
@@ -32,13 +33,32 @@ class EstablishmentRepository {
     suspend fun updateUserPhotoUrl(url: String): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         return try {
-            db.collection("users").document(uid)
-                .update("photoUrl", url)
-                .await()
+            db.collection("users").document(uid).update("photoUrl", url).await()
             true
+        } catch (e: Exception) { false }
+    }
+
+    // --- NOVO: LÓGICA DE UPLOAD DE BANNER (CAPA) ---
+    suspend fun uploadBannerImage(imageUri: Uri): String? {
+        val uid = auth.currentUser?.uid ?: return null
+        return try {
+            // Salva em uma pasta diferente ou com nome diferente
+            val ref = storage.reference.child("banners/$uid.jpg")
+            ref.putFile(imageUri).await()
+            val downloadUrl = ref.downloadUrl.await()
+            downloadUrl.toString()
         } catch (e: Exception) {
-            false
+            e.printStackTrace()
+            null
         }
+    }
+
+    suspend fun updateUserBannerUrl(url: String): Boolean {
+        val uid = auth.currentUser?.uid ?: return false
+        return try {
+            db.collection("users").document(uid).update("bannerUrl", url).await()
+            true
+        } catch (e: Exception) { false }
     }
 
     // --- PERFIL E CONFIGURAÇÕES ---
@@ -48,11 +68,41 @@ class EstablishmentRepository {
         return try {
             val doc = db.collection("users").document(uid).get().await()
             doc.toObject(AppUser::class.java)
+        } catch (e: Exception) { null }
+    }
+
+    // ATUALIZADO: Salva o perfil completo (Info + Horários)
+    suspend fun updateFullProfile(
+        businessName: String,
+        businessPhone: String,
+        address: BusinessAddress,
+        socials: SocialLinks,
+        openTime: String,
+        closeTime: String,
+        workDays: List<Int>
+    ): Boolean {
+        val uid = auth.currentUser?.uid ?: return false
+        
+        val updates = mapOf(
+            "businessName" to businessName,
+            "businessPhone" to businessPhone,
+            "businessAddress" to address,
+            "socialLinks" to socials,
+            "openTime" to openTime,
+            "closeTime" to closeTime,
+            "workDays" to workDays
+        )
+
+        return try {
+            db.collection("users").document(uid).update(updates).await()
+            true
         } catch (e: Exception) {
-            null
+            e.printStackTrace()
+            false
         }
     }
 
+    // (Mantido para compatibilidade, caso use em outro lugar)
     suspend fun updateEstablishmentSettings(
         openTime: String,
         closeTime: String,
@@ -67,14 +117,10 @@ class EstablishmentRepository {
         return try {
             db.collection("users").document(uid).update(updates).await()
             true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+        } catch (e: Exception) { false }
     }
 
-    // --- SERVIÇOS ---
-
+    // --- SERVIÇOS E EQUIPE (CÓDIGO EXISTENTE MANTIDO) ---
     suspend fun addService(service: Service): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         return try {
@@ -82,35 +128,22 @@ class EstablishmentRepository {
             val serviceWithId = service.copy(id = docRef.id)
             docRef.set(serviceWithId).await()
             true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+        } catch (e: Exception) { false }
     }
 
-    // Busca serviços do PRÓPRIO usuário logado (usado pelo Gestor)
     suspend fun getMyServices(): List<Service> {
         val uid = auth.currentUser?.uid ?: return emptyList()
         return try {
             val snapshot = db.collection("users").document(uid).collection("services").get().await()
             snapshot.toObjects(Service::class.java)
-        } catch (e: Exception) {
-            emptyList()
-        }
+        } catch (e: Exception) { emptyList() }
     }
 
-    // NOVO: Busca serviços de um usuário ESPECÍFICO (usado pelo Funcionário para ver os do Gestor)
     suspend fun getServices(targetUid: String): List<Service> {
         return try {
-            val snapshot = db.collection("users")
-                .document(targetUid)
-                .collection("services")
-                .get()
-                .await()
+            val snapshot = db.collection("users").document(targetUid).collection("services").get().await()
             snapshot.toObjects(Service::class.java)
-        } catch (e: Exception) {
-            emptyList()
-        }
+        } catch (e: Exception) { emptyList() }
     }
 
     suspend fun updateServiceEmployees(serviceId: String, employeeIds: List<String>): Boolean {
@@ -118,41 +151,27 @@ class EstablishmentRepository {
         return try {
             db.collection("users").document(uid)
                 .collection("services").document(serviceId)
-                .update("employeeIds", employeeIds)
-                .await()
+                .update("employeeIds", employeeIds).await()
             true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+        } catch (e: Exception) { false }
     }
 
     suspend fun deleteService(serviceId: String): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         return try {
-            db.collection("users").document(uid).collection("services").document(serviceId).delete()
-                .await()
+            db.collection("users").document(uid).collection("services").document(serviceId).delete().await()
             true
-        } catch (e: Exception) {
-            false
-        }
+        } catch (e: Exception) { false }
     }
 
     suspend fun updateService(service: Service): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         return try {
             db.collection("users").document(uid)
-                .collection("services").document(service.id)
-                .set(service)
-                .await()
+                .collection("services").document(service.id).set(service).await()
             true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+        } catch (e: Exception) { false }
     }
-
-    // --- EQUIPE ---
 
     suspend fun getMyTeamMembers(): List<AppUser> {
         val uid = auth.currentUser?.uid ?: return emptyList()
@@ -166,8 +185,6 @@ class EstablishmentRepository {
             val team = employeesSnapshot.toObjects(AppUser::class.java).toMutableList()
             if (manager != null) team.add(0, manager)
             team
-        } catch (e: Exception) {
-            emptyList()
-        }
+        } catch (e: Exception) { emptyList() }
     }
 }

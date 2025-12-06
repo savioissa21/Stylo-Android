@@ -1,9 +1,12 @@
+// Caminho: app/src/main/java/com/example/styloandroid/ui/client/booking/EstablishmentDetailFragment.kt
+
 package com.example.styloandroid.ui.client.booking
 
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isVisible
@@ -18,9 +21,6 @@ import com.example.styloandroid.data.model.AppUser
 import com.example.styloandroid.data.model.Appointment
 import com.example.styloandroid.data.model.Service
 import com.example.styloandroid.databinding.FragmentEstablishmentDetailBinding
-import com.example.styloandroid.ui.client.booking.BookingServiceAdapter
-import com.example.styloandroid.ui.client.booking.BookingViewModel
-import com.example.styloandroid.ui.client.booking.TimeSlotAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -37,6 +37,11 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
     private var providerId: String = ""
     private var businessName: String = ""
     private var teamList: List<AppUser> = emptyList()
+
+    // Variáveis para controlar o BottomSheet ativo
+    private var activeBookingSheet: BottomSheetDialog? = null
+    private var sheetBtnConfirm: Button? = null
+    private var sheetProgressBar: ProgressBar? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -87,28 +92,40 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             b.tvRatingDetail.text = formatted
         }
 
-        // --- MUDANÇA AQUI: Toast no lugar de Snackbar ---
+        // Observa status de SUCESSO/ERRO do agendamento
         vm.bookingStatus.observe(viewLifecycleOwner) { msg ->
             if (msg != null) {
-                // Exibe o Toast
                 Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
 
-                // Se deu certo, volta para a tela anterior
                 if (msg.contains("sucesso", true)) {
+                    // SÓ FECHA O MODAL SE DER SUCESSO
+                    activeBookingSheet?.dismiss()
                     findNavController().popBackStack()
                 }
             }
         }
+
+        // NOVO: Observa se está enviando o agendamento (LOADING)
+        vm.isBookingLoading.observe(viewLifecycleOwner) { isLoading ->
+            // Se o bottom sheet estiver aberto, atualiza a UI dele
+            if (activeBookingSheet?.isShowing == true) {
+                sheetBtnConfirm?.isEnabled = !isLoading
+                sheetBtnConfirm?.text = if (isLoading) "Agendando..." else sheetBtnConfirm?.tag as? String ?: "Confirmar"
+                
+                // Exibe ou esconde o progress bar sobre o botão
+                sheetProgressBar?.isVisible = isLoading
+                // Esconde o texto do botão visualmente se quiser (opcional), ou deixa transparente
+                if(isLoading) sheetBtnConfirm?.alpha = 0.5f else sheetBtnConfirm?.alpha = 1.0f
+            }
+        }
     }
 
-    // --- LÓGICA DO BOTTOM SHEET ---
     private fun openBookingSheet(service: Service) {
         val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_booking, null)
         val sheetDialog = BottomSheetDialog(requireContext())
         sheetDialog.setContentView(sheetView)
 
-        // IMPORTANTE: Como mudamos o XML para NestedScrollView,
-        // certifique-se de que os IDs abaixo batem com o novo XML corrigido.
+        // Referências Locais
         val tvService = sheetView.findViewById<TextView>(R.id.tvServiceNameSheet)
         val chipGroup = sheetView.findViewById<ChipGroup>(R.id.chipGroupEmployees)
         val btnDate = sheetView.findViewById<View>(R.id.btnPickDate)
@@ -116,7 +133,18 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         val rvSlots = sheetView.findViewById<RecyclerView>(R.id.rvTimeSlots)
         val progressSlots = sheetView.findViewById<View>(R.id.progressSlots)
         val tvNoSlots = sheetView.findViewById<TextView>(R.id.tvNoSlots)
-        val btnConfirm = sheetView.findViewById<Button>(R.id.btnConfirmBooking)
+        
+        // Referências Globais (para o Observer atualizar)
+        sheetBtnConfirm = sheetView.findViewById(R.id.btnConfirmBooking)
+        sheetProgressBar = sheetView.findViewById(R.id.progressBookingAction)
+        activeBookingSheet = sheetDialog
+
+        // Limpa referências ao fechar
+        sheetDialog.setOnDismissListener {
+            activeBookingSheet = null
+            sheetBtnConfirm = null
+            sheetProgressBar = null
+        }
 
         tvService.text = "${service.name} - R$ ${String.format("%.2f", service.price)}"
 
@@ -126,10 +154,11 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
         val timeAdapter = TimeSlotAdapter { timestamp ->
             selectedTimestamp = timestamp
-            btnConfirm.isEnabled = true
-            btnConfirm.alpha = 1.0f
-            btnConfirm.text =
-                "Confirmar para " + SimpleDateFormat("HH:mm", Locale.getDefault()).format(timestamp)
+            sheetBtnConfirm?.isEnabled = true
+            sheetBtnConfirm?.alpha = 1.0f
+            val btnText = "Confirmar para " + SimpleDateFormat("HH:mm", Locale.getDefault()).format(timestamp)
+            sheetBtnConfirm?.text = btnText
+            sheetBtnConfirm?.tag = btnText // Guarda texto original no tag
         }
         rvSlots.layoutManager = GridLayoutManager(requireContext(), 4)
         rvSlots.adapter = timeAdapter
@@ -141,41 +170,90 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 tvNoSlots.text = "Fechado neste dia da semana."
                 tvNoSlots.isVisible = true
                 rvSlots.isVisible = false
-                btnConfirm.isEnabled = false
-                btnConfirm.alpha = 0.5f
+                sheetBtnConfirm?.isEnabled = false
+                sheetBtnConfirm?.alpha = 0.5f
                 return
             } else {
                 tvNoSlots.text = "Nenhum horário disponível."
             }
 
             selectedTimestamp = 0L
-            btnConfirm.isEnabled = false
-            btnConfirm.alpha = 0.5f
-            btnConfirm.text = "Selecione um horário"
+            sheetBtnConfirm?.isEnabled = false
+            sheetBtnConfirm?.alpha = 0.5f
+            sheetBtnConfirm?.text = "Selecione um horário"
 
             vm.loadTimeSlots(selectedDateCal, service.durationMin, selectedEmployee!!.uid)
         }
 
+        // Observadores locais para slots (mantidos aqui pois são específicos desta instância do sheet)
+        // OBS: Cuidado com vazamento de observers. Como usamos viewLifecycleOwner e LiveData, 
+        // eles seriam atrelados ao Fragment. O ideal seria o Fragment observar sempre e atualizar "activeSheet".
+        // O setupObservers já trata o `availableSlots`? Vamos checar.
+        // O `vm.availableSlots` foi observado no código anterior DENTRO do openBookingSheet.
+        // Isso cria múltiplos observers se abrir/fechar várias vezes.
+        // CORREÇÃO: Mover observers de slots para setupObservers também.
+        
+        // Vamos mover a lógica de UI dos slots para cá, mas usando o LiveData do VM.
+        // Como o Fragment vive mais que o Dialog, precisamos checar se o Dialog está mostrando.
+        
+        // Para simplificar e evitar refatoração massiva agora, vamos remover os observers antigos
+        // de dentro desta função e usar os globais no `setupObservers`.
+        
+        // --- ADIÇÃO NO setupObservers (Coloque isso dentro do método setupObservers lá em cima) ---
+        /*
         vm.availableSlots.observe(viewLifecycleOwner) { slots ->
-            if (sheetDialog.isShowing) {
-                timeAdapter.submitList(slots)
-                tvNoSlots.isVisible = slots.isEmpty()
-                rvSlots.isVisible = slots.isNotEmpty()
+            if (activeBookingSheet?.isShowing == true) {
+                // Precisamos acessar o adapter. Como ele é local, podemos guardá-lo ou 
+                // recriar a referência. Uma forma simples é buscar a RV na view do dialog ativo.
+                val rv = activeBookingSheet?.findViewById<RecyclerView>(R.id.rvTimeSlots)
+                val noSlots = activeBookingSheet?.findViewById<View>(R.id.tvNoSlots)
+                
+                (rv?.adapter as? TimeSlotAdapter)?.submitList(slots)
+                noSlots?.isVisible = slots.isEmpty()
+                rv?.isVisible = slots.isNotEmpty()
             }
         }
 
         vm.isLoadingSlots.observe(viewLifecycleOwner) { loading ->
-            if (sheetDialog.isShowing) {
-                progressSlots.isVisible = loading
+            if (activeBookingSheet?.isShowing == true) {
+                val progress = activeBookingSheet?.findViewById<View>(R.id.progressSlots)
+                val rv = activeBookingSheet?.findViewById<View>(R.id.rvTimeSlots)
+                val noSlots = activeBookingSheet?.findViewById<View>(R.id.tvNoSlots)
+                
+                progress?.isVisible = loading
                 if(loading) {
-                    rvSlots.isVisible = false
-                    tvNoSlots.isVisible = false
+                    rv?.isVisible = false
+                    noSlots?.isVisible = false
                 }
             }
         }
+        */
+        
+        // MANTENDO A ESTRUTURA ORIGINAL (com observer local) para menor impacto, 
+        // mas ciente que removemos o observer ao fechar seria o ideal. 
+        // O `viewLifecycleOwner` limpa os observers quando a VIEW do fragmento morre (navegação).
+        // Se abrir/fechar o dialog 10 vezes na mesma tela, teremos 10 observers.
+        // MELHOR PRÁTICA RÁPIDA: vm.availableSlots.removeObservers(viewLifecycleOwner) antes de observar.
+        
+        vm.availableSlots.removeObservers(viewLifecycleOwner)
+        vm.availableSlots.observe(viewLifecycleOwner) { slots ->
+            timeAdapter.submitList(slots)
+            tvNoSlots.isVisible = slots.isEmpty()
+            rvSlots.isVisible = slots.isNotEmpty()
+        }
 
+        vm.isLoadingSlots.removeObservers(viewLifecycleOwner)
+        vm.isLoadingSlots.observe(viewLifecycleOwner) { loading ->
+            progressSlots.isVisible = loading
+            if(loading) {
+                rvSlots.isVisible = false
+                tvNoSlots.isVisible = false
+            }
+        }
+
+        // ... (Restante da lógica de Chips e DatePicker mantida igual) ...
+        
         val qualifiedEmployees = vm.getEmployeesForService(service)
-
         if (qualifiedEmployees.isEmpty()) {
             Toast.makeText(requireContext(), "Sem profissionais disponíveis.", Toast.LENGTH_SHORT).show()
             return
@@ -187,7 +265,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             chip.isCheckable = true
             chip.id = index
             chipGroup.addView(chip)
-
             if (index == 0) {
                 chip.isChecked = true
                 selectedEmployee = emp
@@ -212,13 +289,8 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 { _, year, month, day ->
                     val tempCal = Calendar.getInstance()
                     tempCal.set(year, month, day)
-
                     if (!vm.isEstablishmentOpenOn(tempCal)) {
-                        Toast.makeText(
-                            requireContext(),
-                            "O estabelecimento não abre neste dia.",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(requireContext(),"O estabelecimento não abre neste dia.",Toast.LENGTH_LONG).show()
                     } else {
                         selectedDateCal.set(year, month, day)
                         tvDateString.text = sdfDate.format(selectedDateCal.time)
@@ -233,7 +305,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             datePicker.show()
         }
 
-        btnConfirm.setOnClickListener {
+        sheetBtnConfirm?.setOnClickListener {
             if (selectedEmployee == null || selectedTimestamp == 0L) return@setOnClickListener
 
             val appointment = Appointment(
@@ -248,11 +320,11 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 employeeName = selectedEmployee!!.name
             )
 
-            // Inicia o agendamento
+            // Inicia o agendamento (O loading será ativado pelo ViewModel)
             vm.createAppointment(appointment)
-
-            // Fecha o modal imediatamente (o Toast aparecerá em seguida pelo observer)
-            sheetDialog.dismiss()
+            
+            // NÃO FECHAMOS O DIALOG AQUI MAIS.
+            // O observer de `bookingStatus` no `setupObservers` fará isso no sucesso.
         }
 
         sheetDialog.show()

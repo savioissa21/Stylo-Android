@@ -1,3 +1,5 @@
+// Caminho: app/src/main/java/com/example/styloandroid/ui/manager/settings/EstablishmentSettingsViewModel.kt
+
 package com.example.styloandroid.ui.manager.settings
 
 import android.net.Uri
@@ -6,6 +8,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.styloandroid.data.model.AppUser
+import com.example.styloandroid.data.model.BusinessAddress
+import com.example.styloandroid.data.model.SocialLinks
 import com.example.styloandroid.data.repository.EstablishmentRepository
 import kotlinx.coroutines.launch
 
@@ -21,6 +25,13 @@ class EstablishmentSettingsViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
+    // Status específicos para loads de imagem
+    private val _isLoadingPhoto = MutableLiveData<Boolean>()
+    val isLoadingPhoto: LiveData<Boolean> = _isLoadingPhoto
+
+    private val _isLoadingBanner = MutableLiveData<Boolean>()
+    val isLoadingBanner: LiveData<Boolean> = _isLoadingBanner
+
     fun loadCurrentSettings() {
         viewModelScope.launch {
             _currentUser.value = repo.getMyProfile()
@@ -28,39 +39,91 @@ class EstablishmentSettingsViewModel : ViewModel() {
     }
 
     fun updateProfileImage(uri: Uri) {
-        _isLoading.value = true
+        _isLoadingPhoto.value = true
         viewModelScope.launch {
-            // 1. Upload para o Storage
             val url = repo.uploadProfileImage(uri)
             if (url != null) {
-                // 2. Atualiza o Firestore
-                val success = repo.updateUserPhotoUrl(url)
-                if (success) {
-                    _statusMsg.value = "Foto atualizada com sucesso!"
-                    loadCurrentSettings() // Recarrega para mostrar a nova foto
+                if (repo.updateUserPhotoUrl(url)) {
+                    _statusMsg.value = "Foto de perfil atualizada!"
+                    loadCurrentSettings()
                 } else {
                     _statusMsg.value = "Erro ao salvar URL da foto."
                 }
             } else {
                 _statusMsg.value = "Erro no upload da imagem."
             }
-            _isLoading.value = false
+            _isLoadingPhoto.value = false
         }
     }
 
-    fun saveSettings(openTime: String, closeTime: String, workDays: List<Int>) {
+    // NOVO: Atualiza Banner
+    fun updateBannerImage(uri: Uri) {
+        _isLoadingBanner.value = true
+        viewModelScope.launch {
+            val url = repo.uploadBannerImage(uri)
+            if (url != null) {
+                if (repo.updateUserBannerUrl(url)) {
+                    _statusMsg.value = "Banner atualizado!"
+                    loadCurrentSettings()
+                } else {
+                    _statusMsg.value = "Erro ao salvar URL do banner."
+                }
+            } else {
+                _statusMsg.value = "Erro no upload do banner."
+            }
+            _isLoadingBanner.value = false
+        }
+    }
+
+    // NOVO: Salva TUDO (Dados + Endereço + Horários)
+    fun saveFullProfile(
+        businessName: String,
+        phone: String,
+        street: String,
+        number: String,
+        neighborhood: String,
+        city: String,
+        state: String,
+        instagram: String,
+        facebook: String,
+        openTime: String,
+        closeTime: String,
+        workDays: List<Int>
+    ) {
+        if (businessName.isBlank()) {
+            _statusMsg.value = "O nome do negócio é obrigatório."
+            return
+        }
         if (workDays.isEmpty()) {
             _statusMsg.value = "Selecione pelo menos um dia de funcionamento."
             return
         }
 
+        _isLoading.value = true
         viewModelScope.launch {
-            val success = repo.updateEstablishmentSettings(openTime, closeTime, workDays)
+            val address = BusinessAddress(
+                street = street,
+                number = number,
+                neighborhood = neighborhood,
+                city = city,
+                state = state
+            )
+            val socials = SocialLinks(
+                instagram = instagram,
+                facebook = facebook
+            )
+
+            val success = repo.updateFullProfile(
+                businessName, phone, address, socials, openTime, closeTime, workDays
+            )
+
             if (success) {
-                _statusMsg.value = "Configurações salvas com sucesso!"
+                _statusMsg.value = "Perfil atualizado com sucesso!"
+                loadCurrentSettings()
             } else {
-                _statusMsg.value = "Erro ao salvar."
+                _statusMsg.value = "Erro ao salvar alterações."
             }
+            _isLoading.value = false
         }
     }
 

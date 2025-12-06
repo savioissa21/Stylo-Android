@@ -1,8 +1,5 @@
 package com.example.styloandroid.data.model
 
-/**
- * Modelo de dados para o Endereço Comercial (Para o GESTOR)
- */
 data class BusinessAddress(
     val zipCode: String = "",
     val street: String = "",
@@ -14,18 +11,12 @@ data class BusinessAddress(
     val lng: Double? = null
 )
 
-/**
- * Modelo de dados para Links Sociais (Para o GESTOR)
- */
 data class SocialLinks(
     val instagram: String? = null,
     val facebook: String? = null,
     val website: String? = null
 )
 
-/**
- * Modelo principal do Usuário.
- */
 data class AppUser(
     // --- Campos Comuns ---
     val uid: String = "",
@@ -35,6 +26,7 @@ data class AppUser(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val photoUrl: String? = null,
+    val bannerUrl: String? = null, // NOVO CAMPO: Capa do estabelecimento
 
     // NOVO: Telefone pessoal (para Cliente ou Funcionário)
     val phoneNumber: String? = null,
