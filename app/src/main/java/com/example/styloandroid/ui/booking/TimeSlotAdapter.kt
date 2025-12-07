@@ -47,20 +47,24 @@ class TimeSlotAdapter(
 
             // Estilo de Seleção
             if (position == selectedPosition) {
-                card.setCardBackgroundColor(Color.parseColor("android:textColor=\"?attr/colorOnSurface")) // Preto (Selecionado)
+                // SELECIONADO: Fundo Verde e Texto Branco
+                card.setCardBackgroundColor(Color.parseColor("#4CAF50"))
                 tvTime.setTextColor(Color.WHITE)
-                card.strokeColor = Color.parseColor("android:textColor=\"?attr/colorOnSurface")
+                card.strokeColor = Color.TRANSPARENT
             } else {
+                // NÃO SELECIONADO: Fundo Branco e Texto Preto
                 card.setCardBackgroundColor(Color.WHITE)
-                tvTime.setTextColor(Color.parseColor("android:textColor=\"?attr/colorOnSurface"))
+                tvTime.setTextColor(Color.BLACK)
                 card.strokeColor = Color.parseColor("#E0E0E0")
             }
 
             itemView.setOnClickListener {
                 val previous = selectedPosition
                 selectedPosition = bindingAdapterPosition
-                notifyItemChanged(previous)
-                notifyItemChanged(selectedPosition)
+
+                // Evita crash se a posição for inválida
+                if (previous != RecyclerView.NO_POSITION) notifyItemChanged(previous)
+                if (selectedPosition != RecyclerView.NO_POSITION) notifyItemChanged(selectedPosition)
 
                 onSlotSelected(timeInMillis)
             }

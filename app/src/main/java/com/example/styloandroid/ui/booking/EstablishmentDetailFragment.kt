@@ -182,7 +182,11 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             val chip = Chip(requireContext())
             chip.text = emp.name
             chip.isCheckable = true
-            chip.id = index
+
+            // CORREÇÃO 1: Usar generateViewId() para evitar ID 0 ou conflitos
+            chip.id = View.generateViewId()
+            chip.tag = index // Guardamos o índice na TAG para recuperar depois
+
             chipGroup.addView(chip)
 
             if (index == 0) {
@@ -191,10 +195,15 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             }
         }
 
-        chipGroup.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId != -1) {
-                selectedEmployee = qualifiedEmployees[checkedId]
-                refreshSlots()
+        chipGroup.setOnCheckedChangeListener { group, checkedId ->
+            if (checkedId != View.NO_ID) {
+                // Recupera o chip pelo ID gerado
+                val chip = group.findViewById<Chip>(checkedId)
+                if (chip != null) {
+                    val index = chip.tag as Int // Recupera o índice da tag
+                    selectedEmployee = qualifiedEmployees[index]
+                    refreshSlots()
+                }
             }
         }
 
@@ -204,9 +213,15 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         refreshSlots()
 
         btnDate.setOnClickListener {
+            // Verifica se o fragmento ainda está válido
+            val context = context ?: return@setOnClickListener
+
             val datePicker = DatePickerDialog(
-                requireContext(),
+                context, // Usa o context seguro
                 { _, year, month, day ->
+
+                    if (!isAdded) return@DatePickerDialog
+
                     val tempCal = Calendar.getInstance()
                     tempCal.set(year, month, day)
 
