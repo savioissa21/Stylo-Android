@@ -123,6 +123,8 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etBusinessName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:inputType="textCapWords"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -134,6 +136,8 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etBusinessPhone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:inputType="phone"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
@@ -174,6 +178,8 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etStreet"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:inputType="textPostalAddress"/>
                     </com.google.android.material.textfield.TextInputLayout>
                     <com.google.android.material.textfield.TextInputLayout
@@ -183,6 +189,8 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:inputType="text"/>
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
@@ -195,6 +203,8 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNeighborhood"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:inputType="textPostalAddress"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -212,15 +222,19 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etCity"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:inputType="textCapWords"/>
                     </com.google.android.material.textfield.TextInputLayout>
                     <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="60dp"
+                        android:layout_width="70dp"
                         android:layout_height="wrap_content"
                         android:hint="UF"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etState"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:maxLength="2"
                             android:inputType="textCapCharacters"/>
                     </com.google.android.material.textfield.TextInputLayout>
@@ -257,6 +271,8 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etInstagram"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:inputType="textUri"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -268,6 +284,8 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etFacebook"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:inputType="textUri"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
