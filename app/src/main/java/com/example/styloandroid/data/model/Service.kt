@@ -2,12 +2,9 @@ package com.example.styloandroid.data.model
 
 data class Service(
     val id: String = "",
-    val name: String = "",         // Ex: "Corte Degrade"
-    val description: String = "",  // Ex: "Corte na tesoura e máquina"
-    val price: Double = 0.0,       // Ex: 35.00
-    val durationMin: Int = 30,     // Duração em minutos
-    
-    // NOVO: Lista de IDs dos profissionais habilitados para este serviço
-    // Se a lista estiver vazia, assume-se que apenas o Gestor faz, ou ninguém.
+    val name: String = "",        
+    val description: String = "",  
+    val price: Double = 0.0,       
+    val durationMin: Int = 30,    
     val employeeIds: List<String> = emptyList() 
 )

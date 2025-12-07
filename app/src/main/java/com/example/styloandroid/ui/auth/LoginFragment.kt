@@ -10,7 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentLoginBinding
-import com.example.styloandroid.viewmodel.auth.LoginViewModel
+import com.example.styloandroid.ui.auth.LoginViewModel
 import com.example.styloandroid.data.auth.AuthResult as AuthState
 
 class LoginFragment : Fragment(R.layout.fragment_login) {

@@ -56,7 +56,7 @@
 
     <fragment
         android:id="@+id/clientHomeFragment"
-        android:name="com.example.styloandroid.ui.home.ClientHomeFragment"
+        android:name="com.example.styloandroid.ui.client.home.ClientHomeFragment"
         android:label="Home Cliente"
         tools:layout="@layout/fragment_home">
         <action
@@ -80,43 +80,43 @@
     <!-- NOVO DESTINO -->
     <fragment
         android:id="@+id/clientProfileFragment"
-        android:name="com.example.styloandroid.ui.home.ClientProfileFragment"
+        android:name="com.example.styloandroid.ui.client.profile.ClientProfileFragment"
         android:label="Meu Perfil"
         tools:layout="@layout/fragment_client_profile" />
 
     <fragment
         android:id="@+id/establishmentDetailFragment"
-        android:name="com.example.styloandroid.ui.booking.EstablishmentDetailFragment"
+        android:name="com.example.styloandroid.ui.client.booking.EstablishmentDetailFragment"
         android:label="Detalhes do Estabelecimento"
         tools:layout="@layout/fragment_establishment_detail" />
 
     <fragment
         android:id="@+id/providerAgendaFragment"
-        android:name="com.example.styloandroid.ui.management.ProviderAgendaFragment"
+        android:name="com.example.styloandroid.ui.manager.agenda.ProviderAgendaFragment"
         android:label="Minha Agenda"
         tools:layout="@layout/fragment_provider_agenda" />
 
     <fragment
         android:id="@+id/clientAppointmentsFragment"
-        android:name="com.example.styloandroid.ui.booking.ClientAppointmentsFragment"
+        android:name="com.example.styloandroid.ui.client.appointments.ClientAppointmentsFragment"
         android:label="Meus Agendamentos"
         tools:layout="@layout/fragment_client_appointments" />
 
     <fragment
         android:id="@+id/servicesFragment"
-        android:name="com.example.styloandroid.ui.management.ServicesFragment"
+        android:name="com.example.styloandroid.ui.manager.services.ServicesFragment"
         android:label="Meus Serviços"
         tools:layout="@layout/fragment_services" />
 
     <fragment
         android:id="@+id/teamManagementFragment"
-        android:name="com.example.styloandroid.ui.management.TeamManagementFragment"
+        android:name="com.example.styloandroid.ui.manager.team.TeamManagementFragment"
         android:label="Minha Equipe"
         tools:layout="@layout/fragment_team_management" />
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.styloandroid.ui.home.HomeFragment"
+        android:name="com.example.styloandroid.ui.manager.home.HomeFragment"
         android:label="Home Profissional"
         tools:layout="@layout/fragment_home">
         <action
@@ -143,7 +143,7 @@
 
     <fragment
         android:id="@+id/establishmentSettingsFragment"
-        android:name="com.example.styloandroid.ui.management.EstablishmentSettingsFragment"
+        android:name="com.example.styloandroid.ui.manager.settings.EstablishmentSettingsFragment"
         android:label="Configurações"
         tools:layout="@layout/fragment_establishment_settings" />
 

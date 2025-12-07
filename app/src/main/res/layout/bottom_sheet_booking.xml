@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -128,12 +127,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:paddingHorizontal="20dp"
-                android:minHeight="100dp"> <ProgressBar
-                android:id="@+id/progressSlots"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone"/>
+                android:minHeight="100dp"> 
+                
+                <ProgressBar
+                    android:id="@+id/progressSlots"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/tvNoSlots"
@@ -155,16 +156,30 @@
                     tools:itemCount="8"/>
             </FrameLayout>
 
-            <Button
-                android:id="@+id/btnConfirmBooking"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Selecione um horário"
-                android:layout_margin="24dp"
-                android:backgroundTint="@color/black"
-                android:textColor="@android:color/white"
-                android:paddingVertical="14dp"
-                android:enabled="false"/>
+                android:layout_margin="24dp">
+
+                <Button
+                    android:id="@+id/btnConfirmBooking"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Selecione um horário"
+                    android:backgroundTint="@color/black"
+                    android:textColor="@android:color/white"
+                    android:paddingVertical="14dp"
+                    android:enabled="false"/>
+
+                <ProgressBar
+                    android:id="@+id/progressBookingAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="4dp"
+                    android:indeterminateTint="@color/white"
+                    android:visibility="gone"/>
+            </FrameLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

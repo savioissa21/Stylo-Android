@@ -10,8 +10,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import com.example.styloandroid.R
 import com.example.styloandroid.data.auth.AuthResult
-import com.example.styloandroid.data.auth.BusinessAddress
-import com.example.styloandroid.data.auth.SocialLinks
+import com.example.styloandroid.data.model.BusinessAddress
+import com.example.styloandroid.data.model.SocialLinks
 import com.example.styloandroid.databinding.FragmentRegisterBinding
 
 class RegisterFragment : Fragment(R.layout.fragment_register) {
