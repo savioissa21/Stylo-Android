@@ -50,7 +50,6 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
                 val status = if(user.uid.isEmpty()) "Pendente" else "Ativo"
                 text2.text = "${user.email} - $status"
 
-                // CLIQUE NO ITEM -> OPÇÕES
                 h.itemView.setOnClickListener {
                     showEmployeeOptions(user)
                 }
@@ -65,10 +64,6 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
         binding.btnInvite.setOnClickListener {
             showCreateEmployeeDialog()
         }
-        // Ajuste do texto do botão
-        binding.btnInvite.text = "Adicionar Funcionário"
-        binding.tvInviteLabel.visibility = View.GONE // Esconde label antigo
-        binding.tilEmailInvite.visibility = View.GONE // Esconde input antigo
 
         vm.teamList.observe(viewLifecycleOwner) { team ->
             binding.tvEmptyTeam.isVisible = team.isEmpty()
@@ -88,8 +83,6 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
 
     private fun showEmployeeOptions(user: AppUser) {
         val options = mutableListOf<String>()
-
-        // Se for pendente, permite editar nome. Se for ativo, apenas remover.
         if (user.uid.isEmpty()) {
             options.add("Editar Nome")
         }
@@ -100,12 +93,8 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
             .setItems(options.toTypedArray()) { _, which ->
                 val selected = options[which]
                 when (selected) {
-                    "Remover da Equipe" -> {
-                        confirmRemoval(user)
-                    }
-                    "Editar Nome" -> {
-                        showEditNameDialog(user)
-                    }
+                    "Remover da Equipe" -> confirmRemoval(user)
+                    "Editar Nome" -> showEditNameDialog(user)
                 }
             }
             .show()
