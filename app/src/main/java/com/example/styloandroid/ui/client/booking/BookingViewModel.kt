@@ -24,6 +24,10 @@ class BookingViewModel : ViewModel() {
     private val _team = MutableLiveData<List<AppUser>>()
     val team: LiveData<List<AppUser>> = _team
 
+    // --- NOVO: LiveData para expor os dados do Estabelecimento (Banner, Endereço, etc) ---
+    private val _establishment = MutableLiveData<AppUser?>()
+    val establishment: LiveData<AppUser?> = _establishment
+
     private val _bookingStatus = MutableLiveData<String?>()
     val bookingStatus: LiveData<String?> = _bookingStatus
 
@@ -36,15 +40,22 @@ class BookingViewModel : ViewModel() {
     private val _isLoadingSlots = MutableLiveData<Boolean>()
     val isLoadingSlots: LiveData<Boolean> = _isLoadingSlots
 
-    // NOVO: Estado de carregamento específico para a ação de "Agendar"
     private val _isBookingLoading = MutableLiveData<Boolean>()
     val isBookingLoading: LiveData<Boolean> = _isBookingLoading
 
+    // Mantemos uma referência privada para validações de horário internas
     private var establishmentInfo: AppUser? = null
 
     fun loadServices(providerId: String) {
         viewModelScope.launch {
-            establishmentInfo = repo.getProviderInfo(providerId)
+            // Carrega info do provedor
+            val info = repo.getProviderInfo(providerId)
+            establishmentInfo = info
+
+            // --- ATUALIZAÇÃO: Publica os dados para a View observar ---
+            _establishment.value = info
+
+            // Carrega serviços
             _services.value = repo.getServicesForProvider(providerId)
         }
     }
@@ -74,7 +85,6 @@ class BookingViewModel : ViewModel() {
                 return@launch
             }
 
-            // ... (Lógica de bloqueio de datas e dias da semana mantida igual) ...
             val sdfDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val dateString = sdfDate.format(date.time)
 
@@ -92,7 +102,6 @@ class BookingViewModel : ViewModel() {
                 return@launch
             }
 
-            // ... (Lógica de parse de horário e slots mantida igual) ...
             val (startHour, startMin) = parseTime(employeeConfig.openTime ?: "09:00")
             val (endHour, endMin) = parseTime(employeeConfig.closeTime ?: "20:00")
 
@@ -142,7 +151,6 @@ class BookingViewModel : ViewModel() {
                     break
                 }
 
-                // Validações (Passado, Almoço, Conflitos)
                 if (slotStart < now + (30 * 60 * 1000)) {
                     slotCalendar.add(Calendar.MINUTE, slotStepMinutes)
                     continue
@@ -183,9 +191,8 @@ class BookingViewModel : ViewModel() {
         return Pair(h, m)
     }
 
-    // ATUALIZADO: Com feedback de loading
     fun createAppointment(appointment: Appointment) {
-        _isBookingLoading.value = true // Inicia loading
+        _isBookingLoading.value = true
         _bookingStatus.value = null
         viewModelScope.launch {
             if (repo.createAppointment(appointment)) {
@@ -193,7 +200,7 @@ class BookingViewModel : ViewModel() {
             } else {
                 _bookingStatus.value = "❌ Erro ao agendar. Tente novamente."
             }
-            _isBookingLoading.value = false // Finaliza loading
+            _isBookingLoading.value = false
         }
     }
 

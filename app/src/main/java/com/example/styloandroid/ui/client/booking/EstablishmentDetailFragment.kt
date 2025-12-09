@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load // IMPORTANTE: Importar o Coil
 import com.example.styloandroid.R
 import com.example.styloandroid.data.model.AppUser
 import com.example.styloandroid.data.model.Appointment
@@ -36,7 +37,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
     private var providerId: String = ""
     private var businessName: String = ""
-    private var teamList: List<AppUser> = emptyList()
 
     // Variáveis para controlar o BottomSheet ativo
     private var activeBookingSheet: BottomSheetDialog? = null
@@ -50,6 +50,8 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         arguments?.let {
             providerId = it.getString("providerId") ?: ""
             businessName = it.getString("businessName") ?: "Estabelecimento"
+
+            // Define o nome inicial vindo dos argumentos (será atualizado depois pelo banco)
             b.tvBusinessTitle.text = businessName
         }
 
@@ -78,6 +80,31 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
     }
 
     private fun setupObservers() {
+        // --- NOVO: Observa os dados do Estabelecimento (Banner e Endereço) ---
+        vm.establishment.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                // Carrega o Banner
+                if (!user.bannerUrl.isNullOrEmpty()) {
+                    b.ivBanner.load(user.bannerUrl) {
+                        crossfade(true)
+                        // Opções adicionais se desejar:
+                        // error(R.drawable.ic_launcher_background)
+                    }
+                }
+
+                // Atualiza o Nome com o dado fresco do banco
+                if (!user.businessName.isNullOrEmpty()) {
+                    b.tvBusinessTitle.text = user.businessName
+                }
+
+                // Atualiza o Endereço de forma formatada
+                user.businessAddress?.let { addr ->
+                    val fullAddress = "${addr.street}, ${addr.number} - ${addr.neighborhood}"
+                    b.tvAddress.text = fullAddress
+                }
+            }
+        }
+
         vm.services.observe(viewLifecycleOwner) { list ->
             b.progressBar.isVisible = false
             b.tvEmpty.isVisible = list.isEmpty()
@@ -85,36 +112,27 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             (b.rvBookingServices.adapter as BookingServiceAdapter).update(list)
         }
 
-        vm.team.observe(viewLifecycleOwner) { teamList = it }
-
         vm.ratingStats.observe(viewLifecycleOwner) { (rating, count) ->
             val formatted = String.Companion.format(Locale("pt", "BR"), "%.1f (%d avaliações)", rating, count)
             b.tvRatingDetail.text = formatted
         }
 
-        // Observa status de SUCESSO/ERRO do agendamento
         vm.bookingStatus.observe(viewLifecycleOwner) { msg ->
             if (msg != null) {
                 Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
 
                 if (msg.contains("sucesso", true)) {
-                    // SÓ FECHA O MODAL SE DER SUCESSO
                     activeBookingSheet?.dismiss()
                     findNavController().popBackStack()
                 }
             }
         }
 
-        // Observa se está enviando o agendamento (LOADING)
         vm.isBookingLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Se o bottom sheet estiver aberto, atualiza a UI dele
             if (activeBookingSheet?.isShowing == true) {
                 sheetBtnConfirm?.isEnabled = !isLoading
                 sheetBtnConfirm?.text = if (isLoading) "Agendando..." else sheetBtnConfirm?.tag as? String ?: "Confirmar"
-                
-                // Exibe ou esconde o progress bar sobre o botão
                 sheetProgressBar?.isVisible = isLoading
-                // Esconde o texto do botão visualmente se quiser (opcional), ou deixa transparente
                 if(isLoading) sheetBtnConfirm?.alpha = 0.5f else sheetBtnConfirm?.alpha = 1.0f
             }
         }
@@ -125,7 +143,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         val sheetDialog = BottomSheetDialog(requireContext())
         sheetDialog.setContentView(sheetView)
 
-        // Referências Locais
         val tvService = sheetView.findViewById<TextView>(R.id.tvServiceNameSheet)
         val chipGroup = sheetView.findViewById<ChipGroup>(R.id.chipGroupEmployees)
         val btnDate = sheetView.findViewById<View>(R.id.btnPickDate)
@@ -133,13 +150,11 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         val rvSlots = sheetView.findViewById<RecyclerView>(R.id.rvTimeSlots)
         val progressSlots = sheetView.findViewById<View>(R.id.progressSlots)
         val tvNoSlots = sheetView.findViewById<TextView>(R.id.tvNoSlots)
-        
-        // Referências Globais (para o Observer atualizar)
+
         sheetBtnConfirm = sheetView.findViewById(R.id.btnConfirmBooking)
         sheetProgressBar = sheetView.findViewById(R.id.progressBookingAction)
         activeBookingSheet = sheetDialog
 
-        // Limpa referências ao fechar
         sheetDialog.setOnDismissListener {
             activeBookingSheet = null
             sheetBtnConfirm = null
@@ -184,7 +199,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
             vm.loadTimeSlots(selectedDateCal, service.durationMin, selectedEmployee!!.uid)
         }
-        
+
         vm.availableSlots.removeObservers(viewLifecycleOwner)
         vm.availableSlots.observe(viewLifecycleOwner) { slots ->
             timeAdapter.submitList(slots)
@@ -200,7 +215,7 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 tvNoSlots.isVisible = false
             }
         }
-        
+
         val qualifiedEmployees = vm.getEmployeesForService(service)
         if (qualifiedEmployees.isEmpty()) {
             Toast.makeText(requireContext(), "Sem profissionais disponíveis.", Toast.LENGTH_SHORT).show()
@@ -211,10 +226,8 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             val chip = Chip(requireContext())
             chip.text = emp.name
             chip.isCheckable = true
-
-            // CORREÇÃO 1: Usar generateViewId() para evitar ID 0 ou conflitos
             chip.id = View.generateViewId()
-            chip.tag = index // Guardamos o índice na TAG para recuperar depois
+            chip.tag = index
 
             chipGroup.addView(chip)
             if (index == 0) {
@@ -225,10 +238,9 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
         chipGroup.setOnCheckedChangeListener { group, checkedId ->
             if (checkedId != View.NO_ID) {
-                // Recupera o chip pelo ID gerado
                 val chip = group.findViewById<Chip>(checkedId)
                 if (chip != null) {
-                    val index = chip.tag as Int // Recupera o índice da tag
+                    val index = chip.tag as Int
                     selectedEmployee = qualifiedEmployees[index]
                     refreshSlots()
                 }
@@ -241,15 +253,12 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
         refreshSlots()
 
         btnDate.setOnClickListener {
-            // Verifica se o fragmento ainda está válido
             val context = context ?: return@setOnClickListener
 
             val datePicker = DatePickerDialog(
-                context, // Usa o context seguro
+                context,
                 { _, year, month, day ->
-
                     if (!isAdded) return@DatePickerDialog
-
                     val tempCal = Calendar.getInstance()
                     tempCal.set(year, month, day)
                     if (!vm.isEstablishmentOpenOn(tempCal)) {
@@ -282,12 +291,8 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
                 employeeId = selectedEmployee!!.uid,
                 employeeName = selectedEmployee!!.name
             )
-
-            // Inicia o agendamento (O loading será ativado pelo ViewModel)
             vm.createAppointment(appointment)
-            
         }
-
         sheetDialog.show()
     }
 
