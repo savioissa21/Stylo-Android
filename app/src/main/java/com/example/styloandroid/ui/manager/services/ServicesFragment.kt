@@ -13,13 +13,12 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.styloandroid.R
-import com.example.styloandroid.ui.manager.services.ServiceAdapter
 import com.example.styloandroid.data.model.AppUser
 import com.example.styloandroid.data.model.Service
 import com.example.styloandroid.databinding.FragmentServicesBinding
-import com.example.styloandroid.ui.manager.services.ManagementViewModel
 
 class ServicesFragment : Fragment(R.layout.fragment_services) {
 
@@ -27,14 +26,17 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
     private var _b: FragmentServicesBinding? = null
     private val b get() = _b!!
 
-    // Adapter agora instanciado como variável de classe para podermos acessar depois
     private lateinit var adapter: ServiceAdapter
-
     private var currentTeamList: List<AppUser> = emptyList()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentServicesBinding.bind(view)
+
+        // Configuração da Toolbar
+        b.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
 
         // Configura Adapter
         adapter = ServiceAdapter(
@@ -56,22 +58,15 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         b.fabAdd.setOnClickListener { showServiceDialog(null) }
 
         // --- OBSERVERS ---
-
-        // 1. Observa se é ReadOnly (Funcionário)
         vm.isReadOnly.observe(viewLifecycleOwner) { readOnly ->
-            // Esconde o botão de Adicionar se for funcionário
             b.fabAdd.isVisible = !readOnly
-
-            // Avisa o adapter para esconder as lixeiras
             adapter.setReadOnly(readOnly)
         }
 
-        // 2. Lista de Serviços
         vm.services.observe(viewLifecycleOwner) {
             adapter.updateList(it)
-            // Feedback visual se a lista estiver vazia (opcional)
             if (it.isEmpty()) {
-                Toast.makeText(context, "Nenhum serviço encontrado.", Toast.LENGTH_SHORT).show()
+                // Opcional: Toast ou layout vazio
             }
         }
 
@@ -83,7 +78,6 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         vm.loadTeamForSelection()
     }
 
-    // (Mantenha showServiceDialog e showLinkTeamDialog iguais ao que você já tem)
     private fun showServiceDialog(serviceToEdit: Service?) {
         val isEditing = serviceToEdit != null
         val title = if (isEditing) "Editar Serviço" else "Novo Serviço"

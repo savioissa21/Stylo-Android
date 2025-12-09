@@ -25,13 +25,6 @@
             android:src="@drawable/ic_launcher_background"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@drawable/ic_launcher_background"
-            android:alpha="0.3"
-            app:layout_constraintBottom_toBottomOf="@id/ivProviderImage"/>
-
         <ImageButton
             android:id="@+id/btnFavorite"
             android:layout_width="48dp"

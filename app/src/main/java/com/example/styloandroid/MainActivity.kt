@@ -12,7 +12,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        FirebaseAuth.getInstance().signOut()
 
 
         // aplica padding para status/navigation bar no root

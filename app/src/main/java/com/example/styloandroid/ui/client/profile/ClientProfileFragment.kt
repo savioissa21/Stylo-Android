@@ -13,7 +13,6 @@ import coil.load
 import coil.transform.CircleCropTransformation
 import com.example.styloandroid.R
 import com.example.styloandroid.databinding.FragmentClientProfileBinding
-import com.example.styloandroid.ui.client.profile.ClientProfileViewModel
 
 class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
 
@@ -24,9 +23,7 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
     // Seletor de Imagem
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            // Atualiza visualmente
             binding.ivProfile.setImageURI(uri)
-            // Avisa ViewModel
             vm.selectImage(uri)
         }
     }
@@ -35,8 +32,10 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentClientProfileBinding.bind(view)
 
-        // Configura Toolbar (se estiver numa activity que não mostra toolbar nativa, senão apenas botão voltar)
-        // Aqui assumimos que o usuário pode querer voltar
+        // Configuração da Toolbar
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
 
         setupListeners()
         setupObservers()
@@ -49,8 +48,6 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
         binding.btnViewHistory.setOnClickListener {
-            // Navega para o fragmento de Agendamentos
-            // Nota: Certifique-se de que o ID 'clientAppointmentsFragment' existe no seu nav_graph.xml
             findNavController().navigate(R.id.clientAppointmentsFragment)
         }
         binding.btnSave.setOnClickListener {
@@ -63,13 +60,10 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
     private fun setupObservers() {
         vm.user.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                // Preenche campos apenas se estiverem vazios (primeira carga)
-                // ou força atualização se desejar
                 if (binding.etName.text.isNullOrEmpty()) binding.etName.setText(user.name)
                 if (binding.etPhone.text.isNullOrEmpty()) binding.etPhone.setText(user.phoneNumber ?: user.businessPhone)
                 binding.etEmail.setText(user.email)
 
-                // Carrega foto (apenas se o usuário não tiver selecionado uma nova localmente ainda)
                 if (!user.photoUrl.isNullOrEmpty()) {
                     binding.ivProfile.load(user.photoUrl) {
                         crossfade(true)
@@ -91,10 +85,6 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
             if (msg != null) {
                 Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                 vm.clearStatus()
-                if (msg.contains("sucesso", true)) {
-                    // Opcional: Voltar para home após salvar
-                    // findNavController().popBackStack()
-                }
             }
         }
     }
