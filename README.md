@@ -69,6 +69,7 @@ O projeto foi construído utilizando as tecnologias mais recentes do ecossistema
 
 O código está organizado seguindo a separação de responsabilidades da arquitetura MVVM:
 
+```bash
 Stylo-Android/
 ├── app/
 │   ├── build.gradle.kts
@@ -102,7 +103,7 @@ Stylo-Android/
 │           └── values/
 │
 └── gradle/libs.versions.toml
-
+```
 ---
 
 ## 🔧 Configuração e Instalação
