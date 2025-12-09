@@ -3,6 +3,7 @@ package com.example.styloandroid.ui.client.booking
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button // Import necessário para o Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.styloandroid.R
@@ -36,6 +37,7 @@ class BookingServiceAdapter(
         private val tvName: TextView = itemView.findViewById(R.id.tvServiceName)
         private val tvPrice: TextView = itemView.findViewById(R.id.tvServicePrice)
         private val tvDuration: TextView = itemView.findViewById(R.id.tvServiceDuration)
+        private val btnBook: View = itemView.findViewById(R.id.btnBookService)
 
         fun bind(service: Service) {
             tvName.text = service.name
@@ -44,6 +46,10 @@ class BookingServiceAdapter(
             tvPrice.text = format.format(service.price)
 
             tvDuration.text = "${service.durationMin} min"
+
+            btnBook.setOnClickListener {
+                onServiceClick(service)
+            }
 
             itemView.setOnClickListener {
                 onServiceClick(service)

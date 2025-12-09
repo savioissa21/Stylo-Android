@@ -9,7 +9,7 @@
     android:layout_marginVertical="8dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="4dp"
-    app:cardBackgroundColor="@android:color/white">
+    app:cardBackgroundColor="@color/surface_white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -19,22 +19,24 @@
         <ImageView
             android:id="@+id/ivProviderImage"
             android:layout_width="match_parent"
-            android:layout_height="140dp"
+            android:layout_height="150dp"
             android:scaleType="centerCrop"
-            android:background="#E0E0E0"
-            android:src="@drawable/ic_launcher_background"
+            android:background="@color/background_light"
+            android:contentDescription="Imagem do estabelecimento"
+            tools:src="@drawable/ic_launcher_background"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <ImageButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btnFavorite"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:src="@drawable/ic_heart_outline"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@null"
-            android:elevation="6dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            app:tint="@color/text_primary"
+            app:backgroundTint="@color/surface_white"
+            app:fabSize="mini"
+            app:elevation="4dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -45,10 +47,11 @@
             tools:text="Barbearia do Mestre"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="#333333"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="16dp"
+            android:textColor="@color/text_primary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginTop="16dp"
+            android:layout_marginHorizontal="16dp"
             app:layout_constraintTop_toBottomOf="@id/ivProviderImage"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -65,55 +68,67 @@
             app:layout_constraintStart_toStartOf="@id/tvBusinessName"
             app:layout_constraintEnd_toEndOf="@id/tvBusinessName"/>
 
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardRating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
+            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="#FFF8E1"
+            app:strokeWidth="0dp"
+            app:cardElevation="0dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/ic_launcher_background"
-            android:backgroundTint="#FFF8E1"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
             app:layout_constraintTop_toBottomOf="@id/tvCategory"
             app:layout_constraintStart_toStartOf="@id/tvCategory">
 
-            <TextView
-                android:text="★"
-                android:textColor="#FFC107"
-                android:textSize="16sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:id="@+id/tvRating"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="4.9"
-                android:textStyle="bold"
-                android:textColor="#333333"
-                android:layout_marginStart="4dp"/>
-            <TextView
-                android:id="@+id/tvReviewCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="(120)"
-                android:textSize="12sp"
-                android:textColor="#9E9E9E"
-                android:layout_marginStart="4dp"/>
-        </LinearLayout>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp">
 
-        <Button
+                <TextView
+                    android:text="★"
+                    android:textColor="@color/state_warning"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/tvRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="4.9"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginStart="4dp"/>
+
+                <TextView
+                    android:id="@+id/tvReviewCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="(120)"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_hint"
+                    android:layout_marginStart="4dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBookNow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Agendar"
-            android:backgroundTint="@color/black"
-            android:textColor="@android:color/white"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/text_primary"
+            app:cornerRadius="20dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/tvCategory"/>
+            app:layout_constraintTop_toBottomOf="@id/tvCategory"
+            android:layout_marginEnd="16dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

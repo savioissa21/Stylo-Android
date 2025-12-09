@@ -196,9 +196,9 @@ class BookingViewModel : ViewModel() {
         _bookingStatus.value = null
         viewModelScope.launch {
             if (repo.createAppointment(appointment)) {
-                _bookingStatus.value = "✅ Agendamento realizado com sucesso!"
+                _bookingStatus.value = "Agendamento realizado com sucesso!"
             } else {
-                _bookingStatus.value = "❌ Erro ao agendar. Tente novamente."
+                _bookingStatus.value = "Erro ao agendar. Tente novamente."
             }
             _isBookingLoading.value = false
         }
