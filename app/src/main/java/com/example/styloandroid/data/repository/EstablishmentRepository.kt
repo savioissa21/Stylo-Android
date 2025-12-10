@@ -16,7 +16,7 @@ class EstablishmentRepository {
     private val auth = FirebaseAuth.getInstance()
     private val storage = FirebaseStorage.getInstance()
 
-    // --- LÓGICA DE UPLOAD DE IMAGEM (PERFIL) ---
+    // upload de imagens
     suspend fun uploadProfileImage(imageUri: Uri): String? {
         val uid = auth.currentUser?.uid ?: return null
         return try {
@@ -38,7 +38,7 @@ class EstablishmentRepository {
         } catch (e: Exception) { false }
     }
 
-    // --- NOVO: LÓGICA DE UPLOAD DE BANNER (CAPA) ---
+    // LÓGICA DE UPLOAD DE BANNER 
     suspend fun uploadBannerImage(imageUri: Uri): String? {
         val uid = auth.currentUser?.uid ?: return null
         return try {
@@ -61,7 +61,7 @@ class EstablishmentRepository {
         } catch (e: Exception) { false }
     }
 
-    // --- PERFIL E CONFIGURAÇÕES ---
+    // PERFIL E CONFIGURAÇÕES 
 
     suspend fun getMyProfile(): AppUser? {
         val uid = auth.currentUser?.uid ?: return null
@@ -102,7 +102,6 @@ class EstablishmentRepository {
         }
     }
 
-    // (Mantido para compatibilidade, caso use em outro lugar)
     suspend fun updateEstablishmentSettings(
         openTime: String,
         closeTime: String,
@@ -120,7 +119,7 @@ class EstablishmentRepository {
         } catch (e: Exception) { false }
     }
 
-    // --- SERVIÇOS E EQUIPE (CÓDIGO EXISTENTE MANTIDO) ---
+    // serviços e equipe
     suspend fun addService(service: Service): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         return try {

@@ -1,5 +1,3 @@
-// Caminho: app/src/main/java/com/example/styloandroid/ui/manager/settings/EstablishmentSettingsViewModel.kt
-
 package com.example.styloandroid.ui.manager.settings
 
 import android.net.Uri
@@ -25,7 +23,6 @@ class EstablishmentSettingsViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    // Status específicos para loads de imagem
     private val _isLoadingPhoto = MutableLiveData<Boolean>()
     val isLoadingPhoto: LiveData<Boolean> = _isLoadingPhoto
 
@@ -56,7 +53,6 @@ class EstablishmentSettingsViewModel : ViewModel() {
         }
     }
 
-    // Atualiza Banner
     fun updateBannerImage(uri: Uri) {
         _isLoadingBanner.value = true
         viewModelScope.launch {
@@ -75,7 +71,6 @@ class EstablishmentSettingsViewModel : ViewModel() {
         }
     }
 
-    // Salva TUDO (Dados + Endereço + Horários)
     fun saveFullProfile(
         businessName: String,
         phone: String,

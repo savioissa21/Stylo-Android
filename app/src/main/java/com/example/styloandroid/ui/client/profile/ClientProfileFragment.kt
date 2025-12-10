@@ -20,7 +20,6 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
     private val binding get() = _binding!!
     private val vm: ClientProfileViewModel by viewModels()
 
-    // Seletor de Imagem
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             binding.ivProfile.setImageURI(uri)
@@ -32,7 +31,6 @@ class ClientProfileFragment : Fragment(R.layout.fragment_client_profile) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentClientProfileBinding.bind(view)
 
-        // Configuração da Toolbar
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }

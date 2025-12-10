@@ -18,7 +18,7 @@ data class SocialLinks(
 )
 
 data class AppUser(
-    // --- Campos Comuns ---
+    // Campos Comuns 
     val uid: String = "",
     val name: String = "",
     val email: String = "",
@@ -30,10 +30,10 @@ data class AppUser(
 
     val phoneNumber: String? = null,
 
-    // --- Campos Específicos do FUNCIONÁRIO ---
+    //  Campos Específicos do FUNCIONÁRIO 
     val establishmentId: String? = null,
 
-    // --- Campos Específicos do GESTOR (Dono do Negócio) ---
+    //  Campos Específicos do GESTOR (Dono do Negócio)
     val businessName: String? = null,
     val cnpj: String? = null,
     val businessPhone: String? = null,
@@ -43,7 +43,7 @@ data class AppUser(
     val businessAddress: BusinessAddress? = null,
     val subscriptionStatus: String? = "trial",
 
-    // --- CONFIGURAÇÕES DE HORÁRIO E AGENDA ---
+    // CONFIGURAÇÕES DE HORÁRIO E AGENDA 
     val openTime: String? = "09:00",
     val closeTime: String? = "20:00",
     val lunchStartTime: String? = null,

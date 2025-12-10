@@ -1,5 +1,3 @@
-// Caminho: app/src/main/java/com/example/styloandroid/ui/client/booking/EstablishmentDetailFragment.kt
-
 package com.example.styloandroid.ui.client.booking
 
 import android.app.DatePickerDialog
@@ -16,7 +14,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import coil.load // IMPORTANTE: Importar o Coil
+import coil.load
 import com.example.styloandroid.R
 import com.example.styloandroid.data.model.AppUser
 import com.example.styloandroid.data.model.Appointment
@@ -37,8 +35,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
 
     private var providerId: String = ""
     private var businessName: String = ""
-
-    // Variáveis para controlar o BottomSheet ativo
     private var activeBookingSheet: BottomSheetDialog? = null
     private var sheetBtnConfirm: Button? = null
     private var sheetProgressBar: ProgressBar? = null
@@ -51,7 +47,6 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
             providerId = it.getString("providerId") ?: ""
             businessName = it.getString("businessName") ?: "Estabelecimento"
 
-            // Define o nome inicial vindo dos argumentos (será atualizado depois pelo banco)
             b.tvBusinessTitle.text = businessName
         }
 
@@ -80,24 +75,17 @@ class EstablishmentDetailFragment : Fragment(R.layout.fragment_establishment_det
     }
 
     private fun setupObservers() {
-        // --- NOVO: Observa os dados do Estabelecimento (Banner e Endereço) ---
         vm.establishment.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                // Carrega o Banner
                 if (!user.bannerUrl.isNullOrEmpty()) {
                     b.ivBanner.load(user.bannerUrl) {
                         crossfade(true)
-                        // Opções adicionais se desejar:
-                        // error(R.drawable.ic_launcher_background)
                     }
                 }
 
-                // Atualiza o Nome com o dado fresco do banco
                 if (!user.businessName.isNullOrEmpty()) {
                     b.tvBusinessTitle.text = user.businessName
                 }
-
-                // Atualiza o Endereço de forma formatada
                 user.businessAddress?.let { addr ->
                     val fullAddress = "${addr.street}, ${addr.number} - ${addr.neighborhood}"
                     b.tvAddress.text = fullAddress

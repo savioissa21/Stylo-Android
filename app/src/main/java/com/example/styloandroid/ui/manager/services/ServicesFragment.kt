@@ -33,12 +33,10 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentServicesBinding.bind(view)
 
-        // Configuração da Toolbar
         b.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
 
-        // Configura Adapter
         adapter = ServiceAdapter(
             onEditClick = { service -> showServiceDialog(service) },
             onDeleteClick = { service ->
@@ -54,10 +52,8 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         b.rvServices.layoutManager = LinearLayoutManager(requireContext())
         b.rvServices.adapter = adapter
 
-        // Clique no FAB (Criar)
         b.fabAdd.setOnClickListener { showServiceDialog(null) }
 
-        // --- OBSERVERS ---
         vm.isReadOnly.observe(viewLifecycleOwner) { readOnly ->
             b.fabAdd.isVisible = !readOnly
             adapter.setReadOnly(readOnly)
@@ -66,14 +62,12 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         vm.services.observe(viewLifecycleOwner) {
             adapter.updateList(it)
             if (it.isEmpty()) {
-                // Opcional: Toast ou layout vazio
             }
         }
 
         vm.teamMembers.observe(viewLifecycleOwner) { currentTeamList = it }
         vm.operationStatus.observe(viewLifecycleOwner) { if(it!=null) Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
 
-        // Carrega os dados
         vm.loadServices()
         vm.loadTeamForSelection()
     }
@@ -93,12 +87,12 @@ class ServicesFragment : Fragment(R.layout.fragment_services) {
         }
         val etPrice = EditText(requireContext()).apply {
             hint = "Preço (Ex: 35.00)"
-            inputType = 8194 // Decimal
+            inputType = 8194 
             setText(serviceToEdit?.price?.toString() ?: "")
         }
         val etDur = EditText(requireContext()).apply {
             hint = "Duração (minutos)"
-            inputType = 2 // Number
+            inputType = 2 
             setText(serviceToEdit?.durationMin?.toString() ?: "")
         }
 

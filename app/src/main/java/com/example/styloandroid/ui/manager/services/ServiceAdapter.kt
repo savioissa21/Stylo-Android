@@ -14,7 +14,7 @@ import java.util.Locale
 
 class ServiceAdapter(
     private var list: List<Service> = emptyList(),
-    private var isReadOnly: Boolean = false, // NOVO PARÂMETRO
+    private var isReadOnly: Boolean = false,
     private val onEditClick: (Service) -> Unit,
     private val onDeleteClick: (Service) -> Unit
 ) : RecyclerView.Adapter<ServiceAdapter.ViewHolder>() {
@@ -24,7 +24,6 @@ class ServiceAdapter(
         notifyDataSetChanged()
     }
 
-    // Método para atualizar o modo de leitura
     fun setReadOnly(readOnly: Boolean) {
         this.isReadOnly = readOnly
         notifyDataSetChanged()
@@ -55,15 +54,11 @@ class ServiceAdapter(
             val count = item.employeeIds.size
             tvTeamCount.text = if (count == 0) "Nenhum profissional" else "$count profissional(is)"
 
-            // --- LÓGICA DE VISUALIZAÇÃO ---
             if (isReadOnly) {
-                // Se for funcionário, esconde a lixeira e desabilita clique de edição
                 btnDelete.isVisible = false
                 itemView.isClickable = false
-                // Opcional: remover o background ripple para parecer estático
                 itemView.background = null
             } else {
-                // Se for Gestor, tudo normal
                 btnDelete.isVisible = true
                 itemView.isClickable = true
                 itemView.setOnClickListener { onEditClick(item) }

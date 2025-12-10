@@ -12,7 +12,7 @@ class BookingRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // --- INFORMAÇÕES DO ESTABELECIMENTO E USUÁRIOS ---
+    // informações do provedor e funcionário
 
     // Busca informações genéricas (usado para pegar dados do Gestor)
     suspend fun getProviderInfo(providerId: String): AppUser? {
@@ -36,7 +36,7 @@ class BookingRepository {
         }
     }
 
-    // --- SERVIÇOS E EQUIPE ---
+    // serviços e equipe
 
     suspend fun getServicesForProvider(providerId: String): List<Service> {
         return try {
@@ -73,7 +73,7 @@ class BookingRepository {
         }
     }
 
-    // --- LÓGICA DE AGENDAMENTO ---
+    // logica do agendamento
 
     suspend fun getAppointmentsForEmployeeOnDate(employeeId: String, startOfDay: Long, endOfDay: Long): List<Appointment> {
         return try {
@@ -113,7 +113,6 @@ class BookingRepository {
         } catch (e: Exception) { false }
     }
 
-    // --- DASHBOARDS E LISTAS ---
 
     suspend fun getProviderAppointments(): List<Appointment> {
         val uid = auth.currentUser?.uid ?: return emptyList()
@@ -147,7 +146,7 @@ class BookingRepository {
         }
     }
 
-    // --- REVIEWS ---
+    //  Reviews
 
     suspend fun submitReview(review: Review): Boolean {
         return try {

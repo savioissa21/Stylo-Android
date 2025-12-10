@@ -16,7 +16,6 @@ class LoginViewModel(
     private val _state = MutableLiveData<AuthResult>()
     val state: LiveData<AuthResult> = _state
 
-    // LiveData para status de reset de senha
     private val _resetStatus = MutableLiveData<String?>()
     val resetStatus: LiveData<String?> = _resetStatus
 
@@ -31,7 +30,6 @@ class LoginViewModel(
         }
     }
 
-    // Lógica de reset
     fun forgotPassword(email: String) {
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _resetStatus.value = "Digite um e-mail válido."

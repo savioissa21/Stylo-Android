@@ -10,7 +10,7 @@ class HomeRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // Busca todos os usuários que são GESTORES (Prestadores de serviço)
+    // Busca todos os usuários que são Prestadores de serviço
     suspend fun getProfessionalProviders(): List<AppUser> {
         return try {
             val snapshot = db.collection("users")
@@ -24,9 +24,7 @@ class HomeRepository {
         }
     }
 
-    // --- SISTEMA DE FAVORITOS ---
-
-    // 1. Alternar Favorito (Adicionar ou Remover)
+    // 1. Alternar Favorito Adicionar ou Remover
     suspend fun toggleFavorite(providerId: String): Boolean {
         val uid = auth.currentUser?.uid ?: return false
         val favRef = db.collection("users").document(uid)
@@ -35,14 +33,12 @@ class HomeRepository {
         return try {
             val doc = favRef.get().await()
             if (doc.exists()) {
-                // Se já existe, remove (desfavoritar)
                 favRef.delete().await()
-                false // Retorna false indicando que NÃO é mais favorito
+                false 
             } else {
-                // Se não existe, cria (favoritar)
                 val data = hashMapOf("timestamp" to System.currentTimeMillis())
                 favRef.set(data).await()
-                true // Retorna true indicando que AGORA é favorito
+                true
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -58,7 +54,6 @@ class HomeRepository {
                 .collection("favorites")
                 .get()
                 .await()
-            // Retorna apenas os IDs dos documentos (que são os IDs dos prestadores)
             snapshot.documents.map { it.id }
         } catch (e: Exception) {
             emptyList()

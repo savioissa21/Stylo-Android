@@ -3,19 +3,17 @@ package com.example.styloandroid.ui.splash
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels // Importante: use by viewModels()
+import androidx.fragment.app.viewModels 
 import androidx.navigation.fragment.findNavController
 import com.example.styloandroid.R
 
 class SplashFragment : Fragment(R.layout.fragment_splash) {
 
-    // Injeta o ViewModel
     private val vm: SplashViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observa a decisão de navegação do ViewModel
         vm.navigationEvent.observe(viewLifecycleOwner) { destination ->
             val navController = findNavController()
             when (destination) {
@@ -28,7 +26,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
             }
         }
 
-        // Inicia a verificação
         vm.checkAuth()
     }
 }

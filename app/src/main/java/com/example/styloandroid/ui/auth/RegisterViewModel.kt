@@ -18,7 +18,6 @@ class RegisterViewModel(
     private val _state = MutableLiveData<AuthResult>()
     val state: LiveData<AuthResult> = _state
 
-    // Data class para organizar os dados do formulário (evita 15 parâmetros)
     data class RegisterData(
         val name: String,
         val email: String,
@@ -34,9 +33,7 @@ class RegisterViewModel(
         val businessAddress: BusinessAddress?
     )
 
-     // Função de registro atualizada para receber o RegisterData
     fun register(data: RegisterData) {
-        // Validações básicas (Step 1)
         when {
             data.name.isBlank() -> _state.value = AuthResult.Error("Nome obrigatório")
             !Patterns.EMAIL_ADDRESS.matcher(data.email).matches() -> _state.value = AuthResult.Error("E-mail inválido")
@@ -44,7 +41,6 @@ class RegisterViewModel(
             data.pass != data.confirm -> _state.value = AuthResult.Error("Senhas não conferem")
             data.role.isBlank() -> _state.value = AuthResult.Error("Selecione o tipo de conta")
 
-            // Validações do Prestador (Steps 2 e 4)
             data.role == "profissional" -> {
                 when {
                     data.businessName.isNullOrBlank() ->
@@ -68,11 +64,10 @@ class RegisterViewModel(
                     data.businessAddress.state.isBlank() || data.businessAddress.state.length != 2 ->
                         _state.value = AuthResult.Error("UF (Estado) inválido")
 
-                    else -> executeRegistration(data) // Passou em tudo
+                    else -> executeRegistration(data)
                 }
             }
 
-            // Se for cliente, não precisa de mais validações
             data.role == "cliente" -> executeRegistration(data)
         }
     }
@@ -81,10 +76,8 @@ class RegisterViewModel(
         viewModelScope.launch {
             _state.value = AuthResult.Loading
             try {
-                // 1. CAPTURA O RESULTADO COMPLETO (SUCCESS OU ERROR) DO REPOSITÓRIO
                 val result = repo.register(data)
 
-                // 2. ATRIBUI O RESULTADO DIRETO, que já contém o UID e o ROLE.
                 _state.value = result
 
             } catch (e: Exception) {

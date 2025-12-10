@@ -59,7 +59,7 @@ class TeamViewModel : ViewModel() {
                 }
 
                 _statusMsg.value = "Funcionário criado e vinculado!"
-                loadTeam() // Recarrega a lista
+                loadTeam()
             } else {
                 _statusMsg.value = "Erro ao criar funcionário."
             }
@@ -71,7 +71,7 @@ class TeamViewModel : ViewModel() {
             val success = repo.removeEmployee(employee)
             if (success) {
                 _statusMsg.value = "Funcionário removido da equipe."
-                loadTeam() // Atualiza lista
+                loadTeam()
             } else {
                 _statusMsg.value = "Erro ao remover funcionário."
             }

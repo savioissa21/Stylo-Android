@@ -17,7 +17,7 @@ import java.util.Locale
 class ClientAppointmentsAdapter(
     private var list: List<Appointment> = emptyList(),
     private val onRateClick: (Appointment) -> Unit = {},
-    private val onCancelClick: (Appointment) -> Unit = {} // NOVO CALLBACK
+    private val onCancelClick: (Appointment) -> Unit = {} 
 ) : RecyclerView.Adapter<ClientAppointmentsAdapter.ViewHolder>() {
 
     fun updateList(newList: List<Appointment>) {
@@ -63,14 +63,12 @@ class ClientAppointmentsAdapter(
                 item.serviceName
             tvService.text = serviceText
 
-            // === Lógica de Cores e Visibilidade ===
             when (item.status) {
                 "pending" -> {
                     tvStatus.text = "PENDENTE"
                     tvStatus.setTextColor(Color.parseColor("#EF6C00"))
                     tvStatus.setBackgroundColor(Color.parseColor("#FFF3E0"))
 
-                    // Pode cancelar se for pendente
                     btnCancel.isVisible = true
                     btnRate.isVisible = false
                 }
@@ -79,7 +77,6 @@ class ClientAppointmentsAdapter(
                     tvStatus.setTextColor(Color.parseColor("#2E7D32"))
                     tvStatus.setBackgroundColor(Color.parseColor("#E8F5E9"))
 
-                    // Pode cancelar se for confirmado (mas no futuro)
                     btnCancel.isVisible = true
                     btnRate.isVisible = false
                 }
@@ -101,7 +98,6 @@ class ClientAppointmentsAdapter(
                 }
             }
 
-            // Click Listeners
             btnRate.setOnClickListener { onRateClick(item) }
 
             btnCancel.setOnClickListener { onCancelClick(item) }

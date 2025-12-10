@@ -21,7 +21,6 @@ class ClientProfileViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    // Armazena temporariamente a URI da nova imagem selecionada
     private var newPhotoUri: Uri? = null
 
     fun loadProfile() {
@@ -30,10 +29,8 @@ class ClientProfileViewModel : ViewModel() {
         }
     }
 
-    // Apenas armazena a URI para salvar depois
     fun selectImage(uri: Uri) {
         newPhotoUri = uri
-        // O fragment cuida de atualizar a ImageView visualmente por enquanto
     }
 
     fun saveProfile(name: String, phone: String) {
@@ -44,13 +41,12 @@ class ClientProfileViewModel : ViewModel() {
 
         _isLoading.value = true
         viewModelScope.launch {
-            // Se tiver newPhotoUri, o repositório faz upload. Se for null, mantém a antiga.
             val success = repo.updateUserProfile(name, phone, newPhotoUri)
 
             if (success) {
                 _statusMsg.value = "Perfil atualizado com sucesso!"
-                newPhotoUri = null // Reset após salvar
-                loadProfile() // Recarrega dados atualizados
+                newPhotoUri = null
+                loadProfile() 
             } else {
                 _statusMsg.value = "Erro ao atualizar perfil."
             }

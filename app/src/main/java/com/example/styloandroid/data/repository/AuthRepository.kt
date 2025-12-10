@@ -64,16 +64,6 @@ class AuthRepository(
             }
         }
 
-    // Enviar e-mail de redefinição de senha
-    suspend fun sendPasswordReset(email: String): Boolean {
-        return try {
-            auth.sendPasswordResetEmail(email).await()
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
     // Atualizar Perfil Genérico (Cliente ou qualquer user)
     suspend fun updateUserProfile(name: String, phone: String, photoUri: Uri?): Boolean {
         val uid = auth.currentUser?.uid ?: return false

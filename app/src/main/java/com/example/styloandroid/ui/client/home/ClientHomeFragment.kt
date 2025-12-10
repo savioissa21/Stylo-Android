@@ -32,14 +32,10 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
         setupObservers()
         setupSearchLogic()
 
-        // Garante que busca os dados atualizados ao abrir
         homeViewModel.fetchProviders()
     }
 
     private fun setupUI() {
-        // Configura o Adapter com dois callbacks:
-        // 1. Clique no Card (Navegar para Detalhes)
-        // 2. Clique no Coração (Favoritar)
         providerAdapter = ProviderAdapter(
             providers = emptyList(),
             onClick = { provider ->
@@ -59,26 +55,21 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
             adapter = providerAdapter
         }
 
-        // Listener do Chip "Apenas Favoritos"
         binding.chipFavorites.setOnCheckedChangeListener { _, isChecked ->
             homeViewModel.toggleShowFavoritesOnly(isChecked)
             if (isChecked) {
-                // Opcional: Limpar texto ao focar nos favoritos
                 binding.etSearch.setText("")
             }
         }
 
-        // Listener do Botão de Filtros (Abre o BottomSheet)
         binding.btnOpenFilters.setOnClickListener {
             showFilterBottomSheet()
         }
 
-        // Navegação Inferior (FAB)
         binding.btnMyAppointments.setOnClickListener {
             findNavController().navigate(R.id.action_client_home_to_appointments)
         }
 
-        // Botões do Cabeçalho
         binding.btnProfile.setOnClickListener {
             findNavController().navigate(R.id.action_client_home_to_profile)
         }
@@ -99,12 +90,10 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
     }
 
     private fun setupObservers() {
-        // Nome do Usuário
         homeViewModel.userName.observe(viewLifecycleOwner) { name ->
             binding.tvWelcomeClient.text = "Bem-vindo(a), $name"
         }
 
-        // Lista de Prestadores
         homeViewModel.providers.observe(viewLifecycleOwner) { list ->
             binding.progressBar.isVisible = false
 
@@ -112,7 +101,6 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
                 binding.tvEmptyState.isVisible = true
                 binding.rvProviders.isVisible = false
 
-                // Mensagem personalizada dependendo do contexto
                 if (binding.chipFavorites.isChecked) {
                     binding.tvEmptyState.text = "Você ainda não tem favoritos."
                 } else {
@@ -126,20 +114,17 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
         }
     }
 
-    // --- LÓGICA DO BOTTOM SHEET DE FILTROS ---
     private fun showFilterBottomSheet() {
         val dialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.bottom_sheet_filters, null)
         dialog.setContentView(view)
 
-        // Referências aos componentes do BottomSheet
         val cgCities = view.findViewById<ChipGroup>(R.id.chipGroupCities)
         val cgCategories = view.findViewById<ChipGroup>(R.id.chipGroupCategories)
         val sliderRating = view.findViewById<Slider>(R.id.sliderRating)
         val btnApply = view.findViewById<Button>(R.id.btnApplyFilters)
         val btnClear = view.findViewById<Button>(R.id.btnClearFilters)
 
-        // 1. Popula Cidades Dinamicamente (Vindo do ViewModel)
         homeViewModel.availableCities.value?.forEach { city ->
             val chip = Chip(requireContext()).apply {
                 text = city
@@ -150,7 +135,6 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
             cgCities.addView(chip)
         }
 
-        // 2. Popula Categorias Dinamicamente
         homeViewModel.availableCategories.value?.forEach { cat ->
             val chip = Chip(requireContext()).apply {
                 text = cat
@@ -161,15 +145,12 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
             cgCategories.addView(chip)
         }
 
-        // 3. Ação Aplicar
         btnApply.setOnClickListener {
-            // Recupera cidade selecionada
             val selectedCityId = cgCities.checkedChipId
             val selectedCity = if (selectedCityId != View.NO_ID) {
                 view.findViewById<Chip>(selectedCityId).tag as String
             } else null
 
-            // Recupera categoria selecionada
             val selectedCatId = cgCategories.checkedChipId
             val selectedCategory = if (selectedCatId != View.NO_ID) {
                 view.findViewById<Chip>(selectedCatId).tag as String
@@ -177,12 +158,10 @@ class ClientHomeFragment : Fragment(R.layout.fragment_client_home) {
 
             val minRating = sliderRating.value
 
-            // Envia para o ViewModel aplicar
             homeViewModel.applyAdvancedFilters(selectedCity, selectedCategory, minRating)
             dialog.dismiss()
         }
 
-        // 4. Ação Limpar
         btnClear.setOnClickListener {
             homeViewModel.clearAdvancedFilters()
             dialog.dismiss()

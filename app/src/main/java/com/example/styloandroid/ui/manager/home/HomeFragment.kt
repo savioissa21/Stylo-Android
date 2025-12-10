@@ -35,19 +35,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             b.tvBusinessName.text = business ?: "Stylo"
         }
 
-        // --- AQUI ESTÁ A MÁGICA PARA ARRUMAR O BOTÃO ---
         vm.userRole.observe(viewLifecycleOwner) { role ->
             val isManager = role == "GESTOR"
 
             if (!isManager) {
                 b.tvBusinessName.text = "Painel do Profissional"
 
-                // Em vez de esconder (GONE), removemos da grade.
-                // Assim, o GridLayout puxa o próximo item (Sair) para a posição vaga (ao lado de Serviços).
                 b.gridMenu.removeView(b.cardTeam)
                 b.gridMenu.removeView(b.cardSettings)
             }
-            // Se for Gestor, não fazemos nada, pois o XML já tem todos os itens.
         }
 
         vm.todayCount.observe(viewLifecycleOwner) { count ->
@@ -79,8 +75,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupClickListeners() {
-        // (Mantém os listeners iguais, pois se o usuário clicar, vai funcionar.
-        // Se a view for removida, o clique não acontece, então é seguro.)
 
         b.btnViewAgenda.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_agenda)

@@ -1,5 +1,3 @@
-// Caminho: app/src/main/java/com/example/styloandroid/ui/manager/settings/EstablishmentSettingsFragment.kt
-
 package com.example.styloandroid.ui.manager.settings
 
 import android.app.TimePickerDialog
@@ -26,12 +24,10 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
     private val binding get() = _binding!!
     private val vm: EstablishmentSettingsViewModel by viewModels()
 
-    // Launcher para Foto de Perfil
     private val pickProfile = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) vm.updateProfileImage(uri)
     }
 
-    // Launcher para Banner (NOVO)
     private val pickBanner = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) vm.updateBannerImage(uri)
     }
@@ -47,7 +43,6 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
     }
 
     private fun setupListeners() {
-        // Seletores de Imagem
         binding.btnChangePhoto.setOnClickListener {
             pickProfile.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
@@ -55,11 +50,9 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
             pickBanner.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
-        // Seletores de Horário
         binding.btnOpenTime.setOnClickListener { showTimePicker(binding.tvOpenTime) }
         binding.btnCloseTime.setOnClickListener { showTimePicker(binding.tvCloseTime) }
 
-        // Botão Salvar Geral
         binding.btnSaveSettings.setOnClickListener {
             saveAllData()
         }
@@ -68,7 +61,6 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
     private fun setupObservers() {
         vm.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                // 1. Imagens
                 if (!user.photoUrl.isNullOrEmpty()) {
                     binding.ivProfile.load(user.photoUrl) {
                         crossfade(true)
@@ -84,11 +76,9 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
                     }
                 }
 
-                // 2. Dados de Texto
                 binding.etBusinessName.setText(user.businessName)
                 binding.etBusinessPhone.setText(user.businessPhone)
 
-                // 3. Endereço
                 user.businessAddress?.let { addr ->
                     binding.etStreet.setText(addr.street)
                     binding.etNumber.setText(addr.number)
@@ -97,13 +87,11 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
                     binding.etState.setText(addr.state)
                 }
 
-                // 4. Redes Sociais
                 user.socialLinks?.let { social ->
                     binding.etInstagram.setText(social.instagram)
                     binding.etFacebook.setText(social.facebook)
                 }
 
-                // 5. Horários e Dias
                 binding.tvOpenTime.text = user.openTime ?: "09:00"
                 binding.tvCloseTime.text = user.closeTime ?: "20:00"
 
@@ -118,7 +106,6 @@ class EstablishmentSettingsFragment : Fragment(R.layout.fragment_establishment_s
             }
         }
 
-        // Loadings Independentes
         vm.isLoadingPhoto.observe(viewLifecycleOwner) { loading ->
             binding.progressPhoto.isVisible = loading
             binding.btnChangePhoto.isEnabled = !loading

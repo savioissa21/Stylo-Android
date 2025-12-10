@@ -1,5 +1,3 @@
-// Caminho: app/src/main/java/com/example/styloandroid/ui/client/booking/BookingViewModel.kt
-
 package com.example.styloandroid.ui.client.booking
 
 import androidx.lifecycle.LiveData
@@ -24,7 +22,6 @@ class BookingViewModel : ViewModel() {
     private val _team = MutableLiveData<List<AppUser>>()
     val team: LiveData<List<AppUser>> = _team
 
-    // --- NOVO: LiveData para expor os dados do Estabelecimento (Banner, Endereço, etc) ---
     private val _establishment = MutableLiveData<AppUser?>()
     val establishment: LiveData<AppUser?> = _establishment
 

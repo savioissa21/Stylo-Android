@@ -16,23 +16,19 @@ class ProviderAgendaFragment : Fragment(R.layout.fragment_provider_agenda) {
     private var _binding: FragmentProviderAgendaBinding? = null
     private val binding get() = _binding!!
 
-    // Usa o ViewModel que criamos no Passo 2
     private val vm: AgendaViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProviderAgendaBinding.bind(view)
 
-        // Configura RecyclerView e Adapter
         val adapter = AgendaAdapter(emptyList()) { appointmentId, newStatus ->
-            // Quando clicar no botão, chama o ViewModel
             vm.updateStatus(appointmentId, newStatus)
         }
 
         binding.rvAgenda.layoutManager = LinearLayoutManager(requireContext())
         binding.rvAgenda.adapter = adapter
 
-        // Observa mudanças na lista de agendamentos
         vm.appointments.observe(viewLifecycleOwner) { list ->
             if (list.isEmpty()) {
                 Toast.makeText(requireContext(), "Nenhum agendamento encontrado", Toast.LENGTH_SHORT).show()
@@ -40,14 +36,12 @@ class ProviderAgendaFragment : Fragment(R.layout.fragment_provider_agenda) {
             adapter.updateList(list)
         }
 
-        // Observa mensagens de sucesso/erro
         vm.statusMsg.observe(viewLifecycleOwner) { msg ->
             if (msg != null) {
                 Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Carrega os dados iniciais
         vm.loadAppointments()
     }
 

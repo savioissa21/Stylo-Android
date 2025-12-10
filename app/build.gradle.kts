@@ -54,16 +54,15 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
 
-    // --- ViewModel e LiveData ---
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-// --- Navegação entre fragments ---
+
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.3")
     implementation("androidx.navigation:navigation-ui-ktx:2.8.3")
-// --- Coroutines (necessário pro viewModelScope) ---
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-// *** Necessário pro 'by viewModels()' ***
+
     implementation("androidx.fragment:fragment-ktx:1.8.5")
     implementation(libs.firebase.storage)
     implementation("io.coil-kt:coil:2.6.0")

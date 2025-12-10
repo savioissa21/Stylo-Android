@@ -12,7 +12,6 @@ class SplashViewModel : ViewModel() {
 
     private val repo = AuthRepository()
 
-    // Enum para definir destinos de navegação de forma tipada
     enum class SplashDestination {
         HOME_MANAGER,
         HOME_CLIENT,
@@ -24,7 +23,6 @@ class SplashViewModel : ViewModel() {
 
     fun checkAuth() {
         viewModelScope.launch {
-            // Mantém o delay visual da Splash
             delay(2000)
 
             val currentUser = repo.currentUserId()

@@ -18,7 +18,6 @@ class HomeViewModel : ViewModel() {
     private val homeRepo = HomeRepository()
     private val bookingRepo = BookingRepository()
 
-    // --- DADOS DO USUÁRIO (COMUM) ---
     private val _userName = MutableLiveData<String>()
     val userName: LiveData<String> = _userName
 
@@ -28,7 +27,6 @@ class HomeViewModel : ViewModel() {
     private val _userRole = MutableLiveData<String>()
     val userRole: LiveData<String> = _userRole
 
-    // --- DASHBOARD (PROFISSIONAL/GESTOR) ---
     private val _todayCount = MutableLiveData<Int>()
     val todayCount: LiveData<Int> = _todayCount
 
@@ -38,7 +36,6 @@ class HomeViewModel : ViewModel() {
     private val _nextAppointment = MutableLiveData<Appointment?>()
     val nextAppointment: LiveData<Appointment?> = _nextAppointment
 
-    // --- BUSCA E FILTROS (CLIENTE) ---
     private var allProvidersList: List<ProviderCardData> = emptyList()
 
     private val _providers = MutableLiveData<List<ProviderCardData>>()
@@ -50,7 +47,6 @@ class HomeViewModel : ViewModel() {
     private val _availableCategories = MutableLiveData<List<String>>()
     val availableCategories: LiveData<List<String>> = _availableCategories
 
-    // Estado dos Filtros
     private var currentQuery = ""
     private var isFavoritesOnly = false
     private var filterCity: String? = null
@@ -59,9 +55,6 @@ class HomeViewModel : ViewModel() {
 
     init {
         loadUserData()
-        // Não chamamos fetchProviders() ou loadDashboardData() aqui automaticamente
-        // pois depende de qual fragmento está ativo (Cliente ou Gestor).
-        // Cada fragmento chama sua função de carga no onViewCreated.
     }
 
     private fun loadUserData() {
@@ -76,7 +69,7 @@ class HomeViewModel : ViewModel() {
 
     fun loadDashboardData() {
         viewModelScope.launch {
-            loadUserData() // Garante dados atualizados
+            loadUserData()
             val allAppointments = bookingRepo.getProviderAppointments()
             calculateStats(allAppointments)
         }
@@ -93,14 +86,12 @@ class HomeViewModel : ViewModel() {
             val appDay = calendar.get(Calendar.DAY_OF_YEAR)
             val appYear = calendar.get(Calendar.YEAR)
 
-            // Inclui pendentes e confirmados (não cancelados)
             appDay == currentDay && appYear == currentYear && app.status != "canceled"
         }
 
         _todayCount.value = todayList.size
         _todayRevenue.value = todayList.sumOf { it.price }
 
-        // Próximo agendamento (Futuro e não cancelado)
         val next = list.filter { it.date > now && it.status != "canceled" }
             .minByOrNull { it.date }
 
@@ -130,7 +121,7 @@ class HomeViewModel : ViewModel() {
                     ProviderCardData(
                         id = user.uid,
                         businessName = user.businessName ?: user.name ?: "Sem Nome",
-                        areaOfWork = category, // Usando areaOfWork como categoria
+                        areaOfWork = category,
                         rating = stats.first,
                         reviewCount = stats.second,
                         profileImageUrl = user.photoUrl,
@@ -142,7 +133,6 @@ class HomeViewModel : ViewModel() {
 
             allProvidersList = cards
 
-            // Popula filtros
             _availableCities.value = citiesSet.toList().sorted()
             _availableCategories.value = categoriesSet.toList().sorted()
 
@@ -176,13 +166,11 @@ class HomeViewModel : ViewModel() {
 
     fun toggleFavorite(provider: ProviderCardData) {
         viewModelScope.launch {
-            // Otimista
             val updatedList = _providers.value?.map {
                 if (it.id == provider.id) it.copy(isFavorite = !it.isFavorite) else it
             } ?: emptyList()
             _providers.value = updatedList
 
-            // Cache
             allProvidersList = allProvidersList.map {
                 if (it.id == provider.id) it.copy(isFavorite = !it.isFavorite) else it
             }
@@ -195,7 +183,6 @@ class HomeViewModel : ViewModel() {
     private fun applyFilters() {
         var result = allProvidersList
 
-        // 1. Texto
         if (currentQuery.isNotEmpty()) {
             result = result.filter {
                 it.businessName.contains(currentQuery, ignoreCase = true) ||
@@ -203,12 +190,10 @@ class HomeViewModel : ViewModel() {
             }
         }
 
-        // 2. Favoritos
         if (isFavoritesOnly) {
             result = result.filter { it.isFavorite }
         }
 
-        // 3. Filtros Avançados
         if (filterCity != null) {
             result = result.filter { it.city.equals(filterCity, ignoreCase = true) }
         }

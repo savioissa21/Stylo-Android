@@ -28,7 +28,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
 
         b.btnRegister.setOnClickListener {
-            // Leitura dos dados da UI (Igual ao anterior)
             val name = b.etName.text?.toString().orEmpty()
             val email = b.etEmail.text?.toString().orEmpty()
             val pass = b.etPassword.text?.toString().orEmpty()
@@ -50,7 +49,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 cnpj = b.etCnpj.text?.toString()
                 businessPhone = b.etBusinessPhone.text?.toString()
                 
-                // ... (restante da leitura dos campos do prestador) ...
                  socialLinks = SocialLinks(
                     instagram = b.etInstagram.text?.toString(),
                     facebook = b.etFacebook.text?.toString(),
@@ -87,7 +85,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 is AuthResult.Success -> {
                     b.btnRegister.isEnabled = true
                     
-                    // Limpa backstack para não voltar ao registro
                     val navOptions = navOptions { popUpTo(R.id.nav_graph) { inclusive = true } }
 
                     when (res.role) {

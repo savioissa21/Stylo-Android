@@ -60,7 +60,6 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
         binding.rvTeam.layoutManager = LinearLayoutManager(requireContext())
         binding.rvTeam.adapter = adapter
 
-        // Botão Adicionar abre o Modal
         binding.btnInvite.setOnClickListener {
             showCreateEmployeeDialog()
         }
@@ -131,15 +130,13 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
         val etEmail = dialogView.findViewById<TextInputEditText>(R.id.etEmpEmail)
         val etPass = dialogView.findViewById<TextInputEditText>(R.id.etEmpPassword)
 
-        // Container onde vamos colocar os checkboxes
         val containerServices = dialogView.findViewById<LinearLayout>(R.id.containerServicesDialog)
         val availableServices = vm.servicesList.value ?: emptyList()
 
-        // Cria um CheckBox para cada serviço dinamicamente
         availableServices.forEach { service ->
             val cb = CheckBox(requireContext())
             cb.text = service.name
-            cb.tag = service.id // Guardamos o ID no tag
+            cb.tag = service.id 
             containerServices.addView(cb)
         }
 
@@ -152,7 +149,6 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
             val email = etEmail.text.toString()
             val pass = etPass.text.toString()
 
-            // Coleta os IDs dos serviços marcados
             val selectedIds = mutableListOf<String>()
             val count = containerServices.childCount
             for (i in 0 until count) {
@@ -162,7 +158,6 @@ class TeamManagementFragment : Fragment(R.layout.fragment_team_management) {
                 }
             }
 
-            // Manda tudo para o ViewModel
             vm.createEmployee(name, email, pass, selectedIds)
             dialog.dismiss()
         }

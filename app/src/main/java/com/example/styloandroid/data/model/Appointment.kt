@@ -15,8 +15,6 @@ data class Appointment(
     val employeeId: String = "",      
     val employeeName: String = "",
 
-
-
     // Serviço
     val serviceId: String = "",
     val serviceName: String = "",

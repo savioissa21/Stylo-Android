@@ -13,11 +13,9 @@ class ClientAppointmentsViewModel : ViewModel() {
 
     private val repo = BookingRepository()
 
-    // Listas separadas
     private val _upcomingList = MutableLiveData<List<Appointment>>()
     private val _historyList = MutableLiveData<List<Appointment>>()
 
-    // Lista que está sendo exibida atualmente
     private val _currentList = MutableLiveData<List<Appointment>>()
     val currentList: LiveData<List<Appointment>> = _currentList
 
@@ -27,7 +25,6 @@ class ClientAppointmentsViewModel : ViewModel() {
     private val _statusMsg = MutableLiveData<String?>()
     val statusMsg: LiveData<String?> = _statusMsg
 
-    // Controle da aba selecionada (0 = Próximos, 1 = Histórico)
     var selectedTab = 0
 
     fun loadAppointments() {
@@ -36,13 +33,11 @@ class ClientAppointmentsViewModel : ViewModel() {
             val allAppointments = repo.getClientAppointments()
             val now = System.currentTimeMillis()
 
-            // Lógica de Separação
             val upcoming = mutableListOf<Appointment>()
             val history = mutableListOf<Appointment>()
 
 
             allAppointments.forEach { app ->
-                // Considera histórico se: Status for cancelado/concluído OU a data já passou
                 val isFinished = app.status == "finished" || app.status == "canceled"
                 val isPastDate = app.date < now
 
@@ -56,7 +51,6 @@ class ClientAppointmentsViewModel : ViewModel() {
             _upcomingList.value = upcoming
             _historyList.value = history
 
-            // Atualiza a lista atual baseada na aba selecionada
             updateCurrentList()
             _isLoading.value = false
         }
@@ -81,7 +75,7 @@ class ClientAppointmentsViewModel : ViewModel() {
             val success = repo.cancelAppointment(appointment.id)
             if (success) {
                 _statusMsg.value = "Agendamento cancelado com sucesso."
-                loadAppointments() // Recarrega para mover para o histórico
+                loadAppointments()
             } else {
                 _statusMsg.value = "Erro ao cancelar."
                 _isLoading.value = false
@@ -94,7 +88,7 @@ class ClientAppointmentsViewModel : ViewModel() {
             val success = repo.submitReview(review)
             if (success) {
                 _statusMsg.value = "Avaliação enviada! Obrigado. ⭐"
-                loadAppointments() // Recarrega para atualizar status de review
+                loadAppointments() 
             } else {
                 _statusMsg.value = "Erro ao enviar avaliação."
             }

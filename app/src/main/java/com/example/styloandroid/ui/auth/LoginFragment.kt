@@ -20,7 +20,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         super.onViewCreated(view, savedInstanceState)
         _b = FragmentLoginBinding.bind(view)
 
-        // Botão de Login
         b.btnLogin.setOnClickListener {
             val email = b.etEmail.text?.toString().orEmpty()
             val pass = b.etPassword.text?.toString().orEmpty()
@@ -32,17 +31,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
-        // Botão Ir para Cadastro
         b.btnGoRegister.setOnClickListener {
             findNavController().navigate(R.id.action_login_to_register)
         }
 
-        // Botão Esqueci Senha (Simplificado)
         b.tvForgotPassword.setOnClickListener {
             Toast.makeText(requireContext(), "Funcionalidade ainda não implementada.", Toast.LENGTH_SHORT).show()
         }
 
-        // Observa o Estado do Login
         vm.state.observe(viewLifecycleOwner) { res: AuthState ->
             when (res) {
                 is AuthState.Loading -> {
@@ -57,7 +53,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         "GESTOR", "FUNCIONARIO" -> findNavController().navigate(R.id.action_login_to_home)
                         "CLIENTE" -> findNavController().navigate(R.id.action_login_to_client_home)
                         else -> {
-                            // Fallback seguro
                             findNavController().navigate(R.id.action_login_to_client_home)
                         }
                     }

@@ -29,7 +29,7 @@ class AgendaViewModel : ViewModel() {
             val success = repo.updateAppointmentStatus(appointmentId, newStatus)
             if (success) {
                 _statusMsg.value = "Status atualizado para $newStatus"
-                loadAppointments() // Recarrega a lista para mostrar a mudança
+                loadAppointments()
             } else {
                 _statusMsg.value = "Erro ao atualizar status"
             }

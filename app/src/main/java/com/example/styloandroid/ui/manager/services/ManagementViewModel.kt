@@ -19,7 +19,6 @@ class ManagementViewModel : ViewModel() {
     private val _isReadOnly = MutableLiveData<Boolean>()
     val isReadOnly: LiveData<Boolean> = _isReadOnly
 
-    // Lista de membros da equipe para popular o checkbox
     private val _teamMembers = MutableLiveData<List<AppUser>>()
     val teamMembers: LiveData<List<AppUser>> = _teamMembers
 
@@ -28,16 +27,13 @@ class ManagementViewModel : ViewModel() {
 
     fun loadServices() {
         viewModelScope.launch {
-            // 1. Pega os dados do usuário atual para saber quem ele é
             val user = repo.getMyProfile()
 
             if (user != null) {
                 if (user.role == "FUNCIONARIO" && !user.establishmentId.isNullOrEmpty()) {
-                    // É funcionário: Busca serviços do PATRÃO e bloqueia edição
                     _isReadOnly.value = true
                     _services.value = repo.getServices(user.establishmentId)
                 } else {
-                    // É Gestor: Busca serviços dele mesmo e libera edição
                     _isReadOnly.value = false
                     _services.value = repo.getServices(user.uid)
                 }

@@ -21,7 +21,7 @@ class TimeSlotAdapter(
 
     fun submitList(newSlots: List<Long>) {
         slots = newSlots
-        selectedPosition = -1 // Reseta seleção ao mudar a lista
+        selectedPosition = -1 
         notifyDataSetChanged()
     }
 
@@ -41,18 +41,14 @@ class TimeSlotAdapter(
         private val tvTime: TextView = itemView.findViewById(R.id.tvSlotTime)
 
         fun bind(timeInMillis: Long, position: Int) {
-            // Formata hora (ex: 14:30)
             val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
             tvTime.text = sdf.format(Date(timeInMillis))
 
-            // Estilo de Seleção
             if (position == selectedPosition) {
-                // SELECIONADO: Fundo Verde e Texto Branco
                 card.setCardBackgroundColor(Color.parseColor("#4CAF50"))
                 tvTime.setTextColor(Color.WHITE)
                 card.strokeColor = Color.TRANSPARENT
             } else {
-                // NÃO SELECIONADO: Fundo Branco e Texto Preto
                 card.setCardBackgroundColor(Color.WHITE)
                 tvTime.setTextColor(Color.BLACK)
                 card.strokeColor = Color.parseColor("#E0E0E0")
@@ -62,7 +58,6 @@ class TimeSlotAdapter(
                 val previous = selectedPosition
                 selectedPosition = bindingAdapterPosition
 
-                // Evita crash se a posição for inválida
                 if (previous != RecyclerView.NO_POSITION) notifyItemChanged(previous)
                 if (selectedPosition != RecyclerView.NO_POSITION) notifyItemChanged(selectedPosition)
 

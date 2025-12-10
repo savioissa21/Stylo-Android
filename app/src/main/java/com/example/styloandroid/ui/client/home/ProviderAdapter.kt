@@ -15,7 +15,7 @@ import com.example.styloandroid.data.model.ProviderCardData
 class ProviderAdapter(
     private var providers: List<ProviderCardData>,
     private val onClick: (ProviderCardData) -> Unit,
-    private val onFavoriteClick: (ProviderCardData) -> Unit // NOVO CALLBACK
+    private val onFavoriteClick: (ProviderCardData) -> Unit
 ) : RecyclerView.Adapter<ProviderAdapter.ProviderViewHolder>() {
 
     fun updateList(newList: List<ProviderCardData>) {
@@ -48,11 +48,9 @@ class ProviderAdapter(
             tvCategory.text = provider.areaOfWork
             tvRating.text = provider.rating.toString()
 
-            // Define o ícone correto
             val heartIcon = if (provider.isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
             btnFavorite.setImageResource(heartIcon)
 
-            // Carrega imagem (mantido igual)
             if (provider.profileImageUrl != null) {
                 ivImage.load(provider.profileImageUrl) {
                     crossfade(true)
@@ -63,11 +61,9 @@ class ProviderAdapter(
                 ivImage.setImageResource(R.drawable.ic_launcher_background)
             }
 
-            // Cliques
             itemView.setOnClickListener { onClick(provider) }
             btnBook.setOnClickListener { onClick(provider) }
 
-            // Clique do Favorito
             btnFavorite.setOnClickListener {
                 onFavoriteClick(provider)
             }
